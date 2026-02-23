@@ -12,28 +12,23 @@ public class PlayerManager : MonoBehaviour
     private void Awake()
     {
         playerInputManager = FindFirstObjectByType<PlayerInputManager>();
-
-        if (playerInputManager == null)
-            Debug.LogError("NO PlayerInputManager found in the scene!");
-        else
-            Debug.Log("layerInputManager FOUND!");
     }
 
     private void OnEnable()
     {
-        Debug.Log("Subscribing to onPlayerJoined...");
+        //Debug.Log("Subscribing to onPlayerJoined...");
         playerInputManager.onPlayerJoined += AddPlayer;
     }
 
     private void OnDisable()
     {
-        Debug.Log("Unsubscribing from onPlayerJoined...");
+        //Debug.Log("Unsubscribing from onPlayerJoined...");
         playerInputManager.onPlayerJoined -= AddPlayer;
     }
 
     public void AddPlayer(PlayerInput player)
     {
-        Debug.Log("AddPlayer fired for playerIndex: " + player.playerIndex);
+        //Debug.Log("AddPlayer fired for playerIndex: " + player.playerIndex);
 
         players.Add(player);
 
@@ -43,8 +38,8 @@ public class PlayerManager : MonoBehaviour
         playerTransform.position = spawnPoint.position;
         playerTransform.rotation = spawnPoint.rotation;
 
-        // ---- NEW: Assign Cinemachine Channel to this player ----
-        int channel = player.playerIndex; // 0,1,2,3...
+
+        int channel = player.playerIndex;
 
         CinemachineCamera cineCam =
             playerTransform.GetComponentInChildren<CinemachineCamera>();
@@ -52,7 +47,7 @@ public class PlayerManager : MonoBehaviour
         if (cineCam != null)
             cineCam.OutputChannel = (Unity.Cinemachine.OutputChannels)(1 << channel);
 
-        // ---- Assign Channel Mask to this player's CinemachineBrain ----
+        // Assign Channel Mask to this player's CinemachineBrain
         CinemachineBrain brain =
             playerTransform.GetComponentInChildren<Camera>()
                            .GetComponent<CinemachineBrain>();
@@ -60,7 +55,7 @@ public class PlayerManager : MonoBehaviour
         if (brain != null)
             brain.ChannelMask = (Unity.Cinemachine.OutputChannels)(1 << channel);
 
-        // ---- Enable only one audio listener ----
+        // Enable only one audio listener
         playerTransform.GetComponentInChildren<AudioListener>().enabled = players.Count == 1;
     }
 }
