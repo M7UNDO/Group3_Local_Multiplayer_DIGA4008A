@@ -49,25 +49,6 @@ public class PlayerMovement : MonoBehaviour
     public float playerHeight;
     public LayerMask layer;
 
-    [Header("Shooting Mechanic")]
-    public Transform firePoint;
-    public GameObject projectilePrefab;
-    public float bulletHitMiss = 25f;
-    [SerializeField]
-    private Transform bulletParent;
-
-    [Header("Aiming")]
-    [SerializeField]
-    private CinemachineCamera freeLookCam;
-    [SerializeField]
-    private float aimingRange = 5f;
-    [SerializeField]
-    private Image reticleImage;
-    private bool isAiming = false;
-    public Color original;
-    public Color targeted;
-
-
 
     [SerializeField]
     private int priorityBoostAmount = 10;
@@ -149,12 +130,6 @@ public class PlayerMovement : MonoBehaviour
 
         rb.useGravity = !OnSlope();
 
-        if (isAiming)
-        {
-            Quaternion targetRotation = Quaternion.Euler(0, cameraTransform.eulerAngles.y, 0);
-            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-        }
-
 
 
     }
@@ -212,46 +187,6 @@ public class PlayerMovement : MonoBehaviour
     {
         return Vector3.ProjectOnPlane(forceDirection, slopeHit.normal).normalized;
     }
-
-    private void UpdateReticle()
-    {
-        print("Change color");
-
-        RaycastHit hit;
-        Debug.DrawRay(cameraTransform.position, cameraTransform.forward * aimingRange, Color.red, 2f);
-        if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, aimingRange))
-        {
-            Debug.Log("Hit: " + hit.collider.name);
-            if (hit.collider.CompareTag("Dragonfly"))
-            {
-
-                reticleImage.color = Color.red;
-            }
-            else if (hit.collider.CompareTag("Bee"))
-            {
-
-                reticleImage.color = Color.red;
-            }
-            else
-            {
-                reticleImage.color = Color.white;
-            }
-        }
-        else
-        {
-            Debug.Log("Nothing hit");
-            reticleImage.color = Color.white;
-        }
-
-
-
-
-
-
-
-
-    }
-
 
 
 }
