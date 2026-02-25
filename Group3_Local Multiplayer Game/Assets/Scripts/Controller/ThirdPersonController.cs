@@ -60,7 +60,7 @@ public class ThirdPersonController : MonoBehaviour
 
 
     private PlayerInput _playerInput;
-    private Animator _animator;
+    [SerializeField]private Animator _animator;
     private CharacterController _controller;
     private PlayerInputHandler _input;
     private GameObject _mainCamera;
