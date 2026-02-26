@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Windows;
 
 public class StackedController : MonoBehaviour
 {
@@ -39,6 +40,15 @@ public class StackedController : MonoBehaviour
     private CharacterController _controller;
     private Animator _animator;
     private GameObject _mainCamera;
+
+    private bool _hasAnimator;
+
+    // animation IDs
+    private int _animIDSpeed;
+    private int _animIDGrounded;
+    private int _animIDJump;
+    private int _animIDFreeFall;
+    private int _animIDMotionSpeed;
 
     // Movement variables
     private float _speed;
@@ -215,22 +225,26 @@ public class StackedController : MonoBehaviour
 
     private void Move()
     {
-        if (_controller == null) return;
-
-        // Calculate target speed
+        // set target speed based on move speed, sprint speed and if sprint is pressed
         float targetSpeed = _sprintInput ? SprintSpeed : MoveSpeed;
-        if (_moveInput.magnitude < 0.1f) targetSpeed = 0.0f;
+        if (_moveInput == Vector2.zero) targetSpeed = 0.0f;
+
 
         float currentHorizontalSpeed = new Vector3(_controller.velocity.x, 0.0f, _controller.velocity.z).magnitude;
-        float speedOffset = 0.1f;
-        float inputMagnitude = _moveInput.magnitude;
 
-        // Smooth speed changes
+        float speedOffset = 0.1f;
+        //float inputMagnitude = _input.analogMovement ? _moveInput.magnitude : 1f;
+        float inputMagnitude =  _moveInput.magnitude;
+
+        // accelerate or decelerate to target speed
         if (currentHorizontalSpeed < targetSpeed - speedOffset ||
             currentHorizontalSpeed > targetSpeed + speedOffset)
         {
+
             _speed = Mathf.Lerp(currentHorizontalSpeed, targetSpeed * inputMagnitude,
                 Time.deltaTime * SpeedChangeRate);
+
+
             _speed = Mathf.Round(_speed * 1000f) / 1000f;
         }
         else
@@ -241,27 +255,32 @@ public class StackedController : MonoBehaviour
         _animationBlend = Mathf.Lerp(_animationBlend, targetSpeed, Time.deltaTime * SpeedChangeRate);
         if (_animationBlend < 0.01f) _animationBlend = 0f;
 
-        // Handle rotation based on movement input (bottom player)
-        if (_moveInput.magnitude >= 0.1f && _mainCamera != null)
+        // normalise input direction
+        Vector3 inputDirection = new Vector3(_moveInput.x, 0.0f, _moveInput.y).normalized;
+
+        if (_moveInput != Vector2.zero)
         {
-            Vector3 inputDirection = new Vector3(_moveInput.x, 0.0f, _moveInput.y).normalized;
             _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
                               _mainCamera.transform.eulerAngles.y;
             float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
                 RotationSmoothTime);
+
+            // rotate to face input direction relative to camera position
             transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
         }
 
-        // Move the character
+
         Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
+
+        // move the player
         _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
                          new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
 
-        // Update animator
-        if (_animator != null)
+
+        if (_hasAnimator)
         {
-            _animator.SetFloat("Speed", _animationBlend);
-            _animator.SetFloat("MotionSpeed", inputMagnitude);
+            _animator.SetFloat(_animIDSpeed, _animationBlend);
+            _animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
         }
     }
 
@@ -325,9 +344,9 @@ public class StackedController : MonoBehaviour
         if (_lookInput.magnitude >= _threshold && !LockCameraPosition)
         {
             // Different multiplier for mouse vs controller
-            float deltaTimeMultiplier;
+            float deltaTimeMultiplier = Time.deltaTime;
 
-            if (_topUsingMouse)
+            /*if (_topUsingMouse)
             {
                 // Mouse: use raw input (already frame-rate independent)
                 deltaTimeMultiplier = MouseLookSensitivity;
@@ -336,7 +355,7 @@ public class StackedController : MonoBehaviour
             {
                 // Gamepad: scale by time and sensitivity
                 deltaTimeMultiplier = GamepadLookSensitivity * Time.deltaTime;
-            }
+            }*/
 
             _cinemachineTargetYaw += _lookInput.x * deltaTimeMultiplier;
             _cinemachineTargetPitch += _lookInput.y * deltaTimeMultiplier;
