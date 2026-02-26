@@ -101,8 +101,21 @@ public class StackManager : MonoBehaviour
         stackPosition.y += stackHeightOffset;
 
         // Deactivate individual players
-        bottomPlayer.playerObject.SetActive(false);
-        topPlayer.playerObject.SetActive(false);
+        for(int i = 0; i < bottomPlayer.playerObject.transform.childCount; i++)
+        {
+            Transform child = bottomPlayer.playerObject.transform.GetChild(i);
+            child.gameObject.SetActive(false);
+        }
+
+        for(int i = 0; i < topPlayer.playerObject.transform.childCount; i++)
+        {
+            Transform child = topPlayer.playerObject.transform.GetChild(i);
+            child.gameObject.SetActive(false);
+        }
+
+        DisableComponents(bottomPlayer, topPlayer);
+        //bottomPlayer.playerObject.SetActive(false);
+        //topPlayer.playerObject.SetActive(false);
 
         // Create stacked character
         currentStackedCharacter = Instantiate(stackedCharacterPrefab, stackPosition, Quaternion.identity);
@@ -114,6 +127,17 @@ public class StackManager : MonoBehaviour
 
         stackActive = true;
         Debug.Log("Stack formed successfully!");
+    }
+
+    public void DisableComponents(PlayerStackInfo bottomPlayer, PlayerStackInfo topPlayer)
+    {
+       bottomPlayer.playerObject.GetComponent<CharacterController>().enabled = false;
+       bottomPlayer.playerObject.GetComponent<ThirdPersonController>().enabled = false;
+       bottomPlayer.playerObject.GetComponent<PlayerInput>().enabled = false;
+
+       topPlayer.playerObject.GetComponent<CharacterController>().enabled = false;
+       topPlayer.playerObject.GetComponent<ThirdPersonController>().enabled = false;
+       topPlayer.playerObject.GetComponent<PlayerInput>().enabled = false;
     }
 
     public void Unstack()

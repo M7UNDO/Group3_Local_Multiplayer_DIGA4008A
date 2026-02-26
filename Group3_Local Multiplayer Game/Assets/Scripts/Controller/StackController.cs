@@ -23,7 +23,12 @@ public class StackedController : MonoBehaviour
     public GameObject CinemachineCameraTarget;
     public float TopClamp = 70.0f;
     public float BottomClamp = -30.0f;
+    public float CameraAngleOverride = 0.0f;
     public bool LockCameraPosition = false;
+
+    // cinemachine
+    private float _cinemachineTargetYaw;
+    private float _cinemachineTargetPitch;
 
     // Components
     private CharacterController _controller;
@@ -43,20 +48,59 @@ public class StackedController : MonoBehaviour
     private Vector2 _lookInput;
     private bool _jumpInput;
     private bool _sprintInput;
-    private bool _interactInput;
 
     // Player references for input sources
     private StackManager.PlayerStackInfo _bottomPlayer;
     private StackManager.PlayerStackInfo _topPlayer;
+
+    private const float _threshold = 0.01f;
+
+    // Track if device is mouse (for camera sensitivity)
+    private bool _isUsingMouse;
 
     private void Awake()
     {
         _controller = GetComponent<CharacterController>();
         _animator = GetComponent<Animator>();
 
-        // Get camera reference
+        // Get camera reference - try multiple ways
         if (_mainCamera == null)
+        {
             _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+
+            // If no camera with MainCamera tag, try Camera.main
+            if (_mainCamera == null && Camera.main != null)
+                _mainCamera = Camera.main.gameObject;
+
+            // If still null, find any camera
+            if (_mainCamera == null)
+            {
+                Camera cam = FindFirstObjectByType<Camera>();
+                if (cam != null)
+                    _mainCamera = cam.gameObject;
+            }
+        }
+
+        // Initialize camera angles
+        if (CinemachineCameraTarget != null)
+        {
+            _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
+            _cinemachineTargetPitch = CinemachineCameraTarget.transform.rotation.eulerAngles.x;
+        }
+    }
+
+    private void Start()
+    {
+        // Double-check camera target assignment
+        if (CinemachineCameraTarget == null)
+        {
+            Debug.LogError("CinemachineCameraTarget is not assigned on StackedController!", this);
+        }
+
+        if (_mainCamera == null)
+        {
+            Debug.LogError("Main camera reference could not be found!", this);
+        }
     }
 
     public void Initialize(StackManager.PlayerStackInfo bottom, StackManager.PlayerStackInfo top)
@@ -64,20 +108,12 @@ public class StackedController : MonoBehaviour
         _bottomPlayer = bottom;
         _topPlayer = top;
 
-        bottom.isTop = false;
-        top.isTop = true;
+        if (bottom != null)
+            bottom.isTop = false;
+        if (top != null)
+            top.isTop = true;
 
-        // Set up input handlers for both players
-        SetupInputHandlers();
-    }
-
-    private void SetupInputHandlers()
-    {
-        // Bottom player controls movement (WASD/Left Stick)
-        var bottomInput = _bottomPlayer.inputHandler;
-
-        // Top player controls interactions (E, etc)
-        var topInput = _topPlayer.inputHandler;
+        Debug.Log($"StackedController initialized: Bottom Player {bottom?.playerIndex}, Top Player {top?.playerIndex}");
     }
 
     private void Update()
@@ -98,33 +134,50 @@ public class StackedController : MonoBehaviour
 
     private void GatherInputs()
     {
-        if (_bottomPlayer?.inputHandler != null)
+        // Reset inputs
+        _moveInput = Vector2.zero;
+        _lookInput = Vector2.zero;
+        _jumpInput = false;
+        _sprintInput = false;
+
+        // Get movement input from bottom player
+        if (_bottomPlayer?.inputHandler != null && _bottomPlayer.playerObject != null)
         {
-            // Bottom player controls movement
             _moveInput = _bottomPlayer.inputHandler.move;
             _sprintInput = _bottomPlayer.inputHandler.sprint;
             _jumpInput = _bottomPlayer.inputHandler.jump;
         }
 
-        if (_topPlayer?.inputHandler != null)
+        // Get look input from top player
+        if (_topPlayer?.inputHandler != null && _topPlayer.playerObject != null)
         {
-            // Top player controls camera/look
             _lookInput = _topPlayer.inputHandler.look;
 
-            // Future: top player controls interaction
-            // _interactInput = _topPlayer.inputHandler.interact;
+            // Determine if using mouse (for deltaTime multiplier)
+            if (_topPlayer.playerInput != null)
+            {
+                _isUsingMouse = _topPlayer.playerInput.currentControlScheme == "KeyboardMouse";
+            }
         }
+
+        // Debug logging (remove in production)
+        if (_moveInput != Vector2.zero)
+            Debug.Log($"Move Input: {_moveInput}");
+        if (_lookInput != Vector2.zero)
+            Debug.Log($"Look Input: {_lookInput}");
     }
 
     private void Move()
     {
+        if (_controller == null) return;
+
         // Calculate target speed
         float targetSpeed = _sprintInput ? SprintSpeed : MoveSpeed;
         if (_moveInput == Vector2.zero) targetSpeed = 0.0f;
 
         float currentHorizontalSpeed = new Vector3(_controller.velocity.x, 0.0f, _controller.velocity.z).magnitude;
         float speedOffset = 0.1f;
-        float inputMagnitude = 1f; // Using full magnitude for consistent movement
+        float inputMagnitude = 1f;
 
         // Smooth speed changes
         if (currentHorizontalSpeed < targetSpeed - speedOffset ||
@@ -143,7 +196,7 @@ public class StackedController : MonoBehaviour
         if (_animationBlend < 0.01f) _animationBlend = 0f;
 
         // Handle rotation based on movement input (bottom player)
-        if (_moveInput != Vector2.zero)
+        if (_moveInput != Vector2.zero && _mainCamera != null)
         {
             Vector3 inputDirection = new Vector3(_moveInput.x, 0.0f, _moveInput.y).normalized;
             _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
@@ -168,6 +221,8 @@ public class StackedController : MonoBehaviour
 
     private void GroundedCheck()
     {
+        if (_controller == null) return;
+
         Vector3 spherePosition = new Vector3(transform.position.x,
             transform.position.y - GroundedOffset, transform.position.z);
         Grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers,
@@ -179,6 +234,8 @@ public class StackedController : MonoBehaviour
 
     private void JumpAndGravity()
     {
+        if (_controller == null) return;
+
         if (Grounded)
         {
             if (_verticalVelocity < 0.0f)
@@ -196,6 +253,9 @@ public class StackedController : MonoBehaviour
                 if (_animator != null)
                     _animator.SetBool("Jump", false);
             }
+
+            if (_animator != null)
+                _animator.SetBool("FreeFall", false);
         }
         else
         {
@@ -213,21 +273,65 @@ public class StackedController : MonoBehaviour
 
     private void CameraRotation()
     {
-        // Camera controlled by top player's look input
-        if (_lookInput.sqrMagnitude >= 0.01f && !LockCameraPosition)
+        if (CinemachineCameraTarget == null) return;
+
+        // Only rotate if there's look input and camera isn't locked
+        if (_lookInput.sqrMagnitude >= _threshold && !LockCameraPosition)
         {
-            float deltaTimeMultiplier = 1.0f; // Using 1 for mouse, can make dynamic later
+            // Different multiplier for mouse vs controller
+            float deltaTimeMultiplier = _isUsingMouse ? 1.0f : Time.deltaTime * 100f; // Higher multiplier for controller
 
-            // Get current rotation from Cinemachine target
-            Vector3 currentRotation = CinemachineCameraTarget.transform.rotation.eulerAngles;
-            float targetYaw = currentRotation.y + _lookInput.x * deltaTimeMultiplier;
-            float targetPitch = currentRotation.x - _lookInput.y * deltaTimeMultiplier;
-
-            // Clamp pitch
-            targetPitch = Mathf.Clamp(targetPitch, BottomClamp, TopClamp);
-
-            // Apply rotation
-            CinemachineCameraTarget.transform.rotation = Quaternion.Euler(targetPitch, targetYaw, 0.0f);
+            _cinemachineTargetYaw += _lookInput.x * deltaTimeMultiplier;
+            _cinemachineTargetPitch += _lookInput.y * deltaTimeMultiplier;
         }
+
+        // Clamp the pitch angle
+        _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
+
+        // Yaw can rotate fully
+        _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
+
+        // Apply rotation to camera target
+        CinemachineCameraTarget.transform.rotation = Quaternion.Euler(
+            _cinemachineTargetPitch + CameraAngleOverride,
+            _cinemachineTargetYaw,
+            0.0f);
+    }
+
+    private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
+    {
+        if (lfAngle < -360f) lfAngle += 360f;
+        if (lfAngle > 360f) lfAngle -= 360f;
+        return Mathf.Clamp(lfAngle, lfMin, lfMax);
+    }
+
+    // Debug visualization
+    private void OnGUI()
+    {
+        if (!Debug.isDebugBuild) return;
+
+        GUI.Label(new Rect(10, 10, 400, 20), $"Move Input: {_moveInput}");
+        GUI.Label(new Rect(10, 30, 400, 20), $"Look Input: {_lookInput}");
+        GUI.Label(new Rect(10, 50, 400, 20), $"Jump: {_jumpInput}, Sprint: {_sprintInput}");
+        GUI.Label(new Rect(10, 70, 400, 20), $"Grounded: {Grounded}");
+        GUI.Label(new Rect(10, 90, 400, 20), $"Speed: {_speed:F2}");
+        GUI.Label(new Rect(10, 110, 400, 20), $"Using Mouse: {_isUsingMouse}");
+
+        if (_bottomPlayer != null)
+            GUI.Label(new Rect(10, 130, 400, 20), $"Bottom Player Active: {_bottomPlayer.playerObject?.activeInHierarchy}");
+        if (_topPlayer != null)
+            GUI.Label(new Rect(10, 150, 400, 20), $"Top Player Active: {_topPlayer.playerObject?.activeInHierarchy}");
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        // Draw grounded check sphere
+        Color transparentGreen = new Color(0.0f, 1.0f, 0.0f, 0.35f);
+        Color transparentRed = new Color(1.0f, 0.0f, 0.0f, 0.35f);
+
+        Gizmos.color = Grounded ? transparentGreen : transparentRed;
+        Gizmos.DrawSphere(
+            new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z),
+            GroundedRadius);
     }
 }
