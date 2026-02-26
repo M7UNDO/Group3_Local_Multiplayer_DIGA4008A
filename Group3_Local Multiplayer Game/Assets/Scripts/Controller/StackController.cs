@@ -26,6 +26,11 @@ public class StackedController : MonoBehaviour
     public float CameraAngleOverride = 0.0f;
     public bool LockCameraPosition = false;
 
+    [Header("Input Settings")]
+    public float GamepadLookSensitivity = 100f;
+    public float MouseLookSensitivity = 1f;
+    public float MoveDeadzone = 0.1f;
+
     // cinemachine
     private float _cinemachineTargetYaw;
     private float _cinemachineTargetPitch;
@@ -55,31 +60,17 @@ public class StackedController : MonoBehaviour
 
     private const float _threshold = 0.01f;
 
-    // Track if device is mouse (for camera sensitivity)
-    private bool _isUsingMouse;
+    // Track device types
+    private bool _bottomUsingMouse;
+    private bool _topUsingMouse;
 
     private void Awake()
     {
         _controller = GetComponent<CharacterController>();
         _animator = GetComponent<Animator>();
 
-        // Get camera reference - try multiple ways
-        if (_mainCamera == null)
-        {
-            _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
-
-            // If no camera with MainCamera tag, try Camera.main
-            if (_mainCamera == null && Camera.main != null)
-                _mainCamera = Camera.main.gameObject;
-
-            // If still null, find any camera
-            if (_mainCamera == null)
-            {
-                Camera cam = FindFirstObjectByType<Camera>();
-                if (cam != null)
-                    _mainCamera = cam.gameObject;
-            }
-        }
+        // Get camera reference
+        FindCameraReference();
 
         // Initialize camera angles
         if (CinemachineCameraTarget != null)
@@ -89,9 +80,26 @@ public class StackedController : MonoBehaviour
         }
     }
 
+    private void FindCameraReference()
+    {
+        if (_mainCamera == null)
+        {
+            _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+
+            if (_mainCamera == null && Camera.main != null)
+                _mainCamera = Camera.main.gameObject;
+
+            if (_mainCamera == null)
+            {
+                Camera cam = FindFirstObjectByType<Camera>();
+                if (cam != null)
+                    _mainCamera = cam.gameObject;
+            }
+        }
+    }
+
     private void Start()
     {
-        // Double-check camera target assignment
         if (CinemachineCameraTarget == null)
         {
             Debug.LogError("CinemachineCameraTarget is not assigned on StackedController!", this);
@@ -109,11 +117,26 @@ public class StackedController : MonoBehaviour
         _topPlayer = top;
 
         if (bottom != null)
+        {
             bottom.isTop = false;
-        if (top != null)
-            top.isTop = true;
+            // Detect input device for bottom player
+            if (bottom.playerInput != null)
+            {
+                _bottomUsingMouse = bottom.playerInput.currentControlScheme == "KeyboardMouse";
+            }
+        }
 
-        Debug.Log($"StackedController initialized: Bottom Player {bottom?.playerIndex}, Top Player {top?.playerIndex}");
+        if (top != null)
+        {
+            top.isTop = true;
+            // Detect input device for top player
+            if (top.playerInput != null)
+            {
+                _topUsingMouse = top.playerInput.currentControlScheme == "KeyboardMouse";
+            }
+        }
+
+        Debug.Log($"StackedController initialized: Bottom Player {bottom?.playerIndex} (Using Mouse: {_bottomUsingMouse}), Top Player {top?.playerIndex} (Using Mouse: {_topUsingMouse})");
     }
 
     private void Update()
@@ -143,28 +166,51 @@ public class StackedController : MonoBehaviour
         // Get movement input from bottom player
         if (_bottomPlayer?.inputHandler != null && _bottomPlayer.playerObject != null)
         {
-            _moveInput = _bottomPlayer.inputHandler.move;
+            Vector2 rawMove = _bottomPlayer.inputHandler.move;
+
+            // Apply deadzone for gamepad
+            if (!_bottomUsingMouse && rawMove.magnitude < MoveDeadzone)
+            {
+                _moveInput = Vector2.zero;
+            }
+            else
+            {
+                _moveInput = rawMove;
+            }
+
             _sprintInput = _bottomPlayer.inputHandler.sprint;
             _jumpInput = _bottomPlayer.inputHandler.jump;
+
+            // Debug for movement
+            if (_moveInput.magnitude > 0.1f)
+                Debug.Log($"Bottom Player Move: {_moveInput}");
         }
 
         // Get look input from top player
         if (_topPlayer?.inputHandler != null && _topPlayer.playerObject != null)
         {
-            _lookInput = _topPlayer.inputHandler.look;
+            Vector2 rawLook = _topPlayer.inputHandler.look;
 
-            // Determine if using mouse (for deltaTime multiplier)
+            // Apply deadzone for gamepad
+            if (!_topUsingMouse && rawLook.magnitude < MoveDeadzone)
+            {
+                _lookInput = Vector2.zero;
+            }
+            else
+            {
+                _lookInput = rawLook;
+            }
+
+            // Update device detection if it changed
             if (_topPlayer.playerInput != null)
             {
-                _isUsingMouse = _topPlayer.playerInput.currentControlScheme == "KeyboardMouse";
+                _topUsingMouse = _topPlayer.playerInput.currentControlScheme == "KeyboardMouse";
             }
-        }
 
-        // Debug logging (remove in production)
-        if (_moveInput != Vector2.zero)
-            Debug.Log($"Move Input: {_moveInput}");
-        if (_lookInput != Vector2.zero)
-            Debug.Log($"Look Input: {_lookInput}");
+            // Debug for look
+            if (_lookInput.magnitude > 0.1f)
+                Debug.Log($"Top Player Look: {_lookInput} (Using Mouse: {_topUsingMouse})");
+        }
     }
 
     private void Move()
@@ -173,11 +219,11 @@ public class StackedController : MonoBehaviour
 
         // Calculate target speed
         float targetSpeed = _sprintInput ? SprintSpeed : MoveSpeed;
-        if (_moveInput == Vector2.zero) targetSpeed = 0.0f;
+        if (_moveInput.magnitude < 0.1f) targetSpeed = 0.0f;
 
         float currentHorizontalSpeed = new Vector3(_controller.velocity.x, 0.0f, _controller.velocity.z).magnitude;
         float speedOffset = 0.1f;
-        float inputMagnitude = 1f;
+        float inputMagnitude = _moveInput.magnitude;
 
         // Smooth speed changes
         if (currentHorizontalSpeed < targetSpeed - speedOffset ||
@@ -196,7 +242,7 @@ public class StackedController : MonoBehaviour
         if (_animationBlend < 0.01f) _animationBlend = 0f;
 
         // Handle rotation based on movement input (bottom player)
-        if (_moveInput != Vector2.zero && _mainCamera != null)
+        if (_moveInput.magnitude >= 0.1f && _mainCamera != null)
         {
             Vector3 inputDirection = new Vector3(_moveInput.x, 0.0f, _moveInput.y).normalized;
             _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
@@ -276,10 +322,21 @@ public class StackedController : MonoBehaviour
         if (CinemachineCameraTarget == null) return;
 
         // Only rotate if there's look input and camera isn't locked
-        if (_lookInput.sqrMagnitude >= _threshold && !LockCameraPosition)
+        if (_lookInput.magnitude >= _threshold && !LockCameraPosition)
         {
             // Different multiplier for mouse vs controller
-            float deltaTimeMultiplier = _isUsingMouse ? 1.0f : Time.deltaTime * 100f; // Higher multiplier for controller
+            float deltaTimeMultiplier;
+
+            if (_topUsingMouse)
+            {
+                // Mouse: use raw input (already frame-rate independent)
+                deltaTimeMultiplier = MouseLookSensitivity;
+            }
+            else
+            {
+                // Gamepad: scale by time and sensitivity
+                deltaTimeMultiplier = GamepadLookSensitivity * Time.deltaTime;
+            }
 
             _cinemachineTargetYaw += _lookInput.x * deltaTimeMultiplier;
             _cinemachineTargetPitch += _lookInput.y * deltaTimeMultiplier;
@@ -288,8 +345,9 @@ public class StackedController : MonoBehaviour
         // Clamp the pitch angle
         _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
 
-        // Yaw can rotate fully
-        _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
+        // Yaw can rotate fully (no clamp needed, but ensure it stays within reasonable range)
+        if (_cinemachineTargetYaw < -360f) _cinemachineTargetYaw += 360f;
+        if (_cinemachineTargetYaw > 360f) _cinemachineTargetYaw -= 360f;
 
         // Apply rotation to camera target
         CinemachineCameraTarget.transform.rotation = Quaternion.Euler(
@@ -310,17 +368,30 @@ public class StackedController : MonoBehaviour
     {
         if (!Debug.isDebugBuild) return;
 
-        GUI.Label(new Rect(10, 10, 400, 20), $"Move Input: {_moveInput}");
-        GUI.Label(new Rect(10, 30, 400, 20), $"Look Input: {_lookInput}");
-        GUI.Label(new Rect(10, 50, 400, 20), $"Jump: {_jumpInput}, Sprint: {_sprintInput}");
-        GUI.Label(new Rect(10, 70, 400, 20), $"Grounded: {Grounded}");
-        GUI.Label(new Rect(10, 90, 400, 20), $"Speed: {_speed:F2}");
-        GUI.Label(new Rect(10, 110, 400, 20), $"Using Mouse: {_isUsingMouse}");
+        int y = 10;
+        int lineHeight = 25;
+
+        GUI.Label(new Rect(10, y, 400, lineHeight), $"Move Input: {_moveInput} (Magnitude: {_moveInput.magnitude:F2})");
+        y += lineHeight;
+
+        GUI.Label(new Rect(10, y, 400, lineHeight), $"Look Input: {_lookInput} (Magnitude: {_lookInput.magnitude:F2})");
+        y += lineHeight;
+
+        GUI.Label(new Rect(10, y, 400, lineHeight), $"Jump: {_jumpInput}, Sprint: {_sprintInput}");
+        y += lineHeight;
+
+        GUI.Label(new Rect(10, y, 400, lineHeight), $"Grounded: {Grounded}, Speed: {_speed:F2}");
+        y += lineHeight;
+
+        GUI.Label(new Rect(10, y, 400, lineHeight), $"Bottom Using Mouse: {_bottomUsingMouse}, Top Using Mouse: {_topUsingMouse}");
+        y += lineHeight;
 
         if (_bottomPlayer != null)
-            GUI.Label(new Rect(10, 130, 400, 20), $"Bottom Player Active: {_bottomPlayer.playerObject?.activeInHierarchy}");
+            GUI.Label(new Rect(10, y, 400, lineHeight), $"Bottom Player Active: {_bottomPlayer.playerObject?.activeInHierarchy}");
+        y += lineHeight;
+
         if (_topPlayer != null)
-            GUI.Label(new Rect(10, 150, 400, 20), $"Top Player Active: {_topPlayer.playerObject?.activeInHierarchy}");
+            GUI.Label(new Rect(10, y, 400, lineHeight), $"Top Player Active: {_topPlayer.playerObject?.activeInHierarchy}");
     }
 
     private void OnDrawGizmosSelected()

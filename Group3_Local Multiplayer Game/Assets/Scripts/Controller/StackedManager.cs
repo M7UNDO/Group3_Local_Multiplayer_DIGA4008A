@@ -19,6 +19,7 @@ public class StackManager : MonoBehaviour
     public GameObject stackedCharacterPrefab;
     public float stackHeightOffset = 1.5f;
     public KeyCode stackTestKey = KeyCode.F; // For testing, remove in final build
+    public PlayerInputManager playerInputManager;
 
     [Header("Debug")]
     public bool stackActive = false;
@@ -131,13 +132,15 @@ public class StackManager : MonoBehaviour
 
     public void DisableComponents(PlayerStackInfo bottomPlayer, PlayerStackInfo topPlayer)
     {
+        playerInputManager.splitScreen = false;
+
        bottomPlayer.playerObject.GetComponent<CharacterController>().enabled = false;
        bottomPlayer.playerObject.GetComponent<ThirdPersonController>().enabled = false;
-       bottomPlayer.playerObject.GetComponent<PlayerInput>().enabled = false;
+       //bottomPlayer.playerObject.GetComponent<PlayerInput>().enabled = false;
 
        topPlayer.playerObject.GetComponent<CharacterController>().enabled = false;
        topPlayer.playerObject.GetComponent<ThirdPersonController>().enabled = false;
-       topPlayer.playerObject.GetComponent<PlayerInput>().enabled = false;
+       //topPlayer.playerObject.GetComponent<PlayerInput>().enabled = false;
     }
 
     public void Unstack()
