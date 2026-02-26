@@ -8,6 +8,7 @@ public class PlayerInputHandler : MonoBehaviour
     public Vector2 look;
     public bool jump;
     public bool sprint;
+    public bool stack;
 
     [Header("Movement Settings")]
     public bool analogMovement;
@@ -24,6 +25,7 @@ public class PlayerInputHandler : MonoBehaviour
     private InputAction lookAction;
     private InputAction jumpAction;
     private InputAction sprintAction;
+    private InputAction stackAction;
 
 
     private void Awake()
@@ -39,6 +41,7 @@ public class PlayerInputHandler : MonoBehaviour
             lookAction = playerMap.FindAction("Look");
             jumpAction = playerMap.FindAction("Jump");
             sprintAction = playerMap.FindAction("Sprint");
+            stackAction = playerMap.FindAction("Stack");
         }
     }
 
@@ -59,6 +62,8 @@ public class PlayerInputHandler : MonoBehaviour
         sprintAction.performed += OnSprintPerformed;
         sprintAction.canceled += OnSprintCanceled;
 
+        stackAction.performed += OnStackPerformed;
+
         playerMap.Enable();
     }
 
@@ -78,6 +83,8 @@ public class PlayerInputHandler : MonoBehaviour
 
         sprintAction.performed -= OnSprintPerformed;
         sprintAction.canceled -= OnSprintCanceled;
+
+        stackAction.performed -= OnStackPerformed;
 
         playerMap.Disable();
     }
@@ -111,6 +118,11 @@ public class PlayerInputHandler : MonoBehaviour
     private void OnSprintCanceled(InputAction.CallbackContext ctx)
     {
         SprintInput(false);
+    }
+
+    private void OnStackPerformed(InputAction.CallbackContext ctx)
+    {
+        StackInput(true);
     }
 
     public void OnMove(InputValue value)
@@ -154,6 +166,33 @@ public class PlayerInputHandler : MonoBehaviour
     public void SprintInput(bool newSprintState)
     {
         sprint = newSprintState;
+    }
+
+    public void StackInput(bool newStackState)
+    {
+        stack = newStackState;
+
+        if (stack)
+        {
+            // Find the other player and attempt to stack
+            FindAndStackWithOtherPlayer();
+        }
+    }
+
+    private void FindAndStackWithOtherPlayer()
+    {
+        // Get all players
+        PlayerInputHandler[] allPlayers = FindObjectsByType<PlayerInputHandler>(FindObjectsSortMode.None);
+
+        foreach (var player in allPlayers)
+        {
+            if (player.gameObject != gameObject && player.isActiveAndEnabled)
+            {
+                // Found another player, attempt to stack
+                StackManager.Instance?.AttemptStack(gameObject, player.gameObject);
+                break;
+            }
+        }
     }
 
     private void OnApplicationFocus(bool hasFocus)
