@@ -143,6 +143,17 @@ public class StackManager : MonoBehaviour
        //topPlayer.playerObject.GetComponent<PlayerInput>().enabled = false;
     }
 
+    public void EnableComponents(PlayerStackInfo bottomPlayer, PlayerStackInfo topPlayer)
+    {
+        playerInputManager.splitScreen = true;
+
+        bottomPlayer.playerObject.GetComponent<CharacterController>().enabled = true;
+        bottomPlayer.playerObject.GetComponent<ThirdPersonController>().enabled = true;
+
+        topPlayer.playerObject.GetComponent<CharacterController>().enabled = true;
+        topPlayer.playerObject.GetComponent<ThirdPersonController>().enabled = true;
+    }
+
     public void Unstack()
     {
         if (!stackActive || currentStackedCharacter == null)

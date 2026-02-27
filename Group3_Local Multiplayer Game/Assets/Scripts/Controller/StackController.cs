@@ -32,18 +32,18 @@ public class StackedController : MonoBehaviour
     public float MouseLookSensitivity = 1f;
     public float MoveDeadzone = 0.1f;
 
-    // cinemachine
+    [Header("Cinemachine")]
     private float _cinemachineTargetYaw;
     private float _cinemachineTargetPitch;
 
-    // Components
+    [Header("Components")]
     private CharacterController _controller;
     private Animator _animator;
     private GameObject _mainCamera;
 
     private bool _hasAnimator;
 
-    // animation IDs
+    [Header("Animation")]
     private int _animIDSpeed;
     private int _animIDGrounded;
     private int _animIDJump;
@@ -51,6 +51,7 @@ public class StackedController : MonoBehaviour
     private int _animIDMotionSpeed;
 
     // Movement variables
+    [Header("Player Movement")]
     private float _speed;
     private float _animationBlend;
     private float _targetRotation;
@@ -79,10 +80,8 @@ public class StackedController : MonoBehaviour
         _controller = GetComponent<CharacterController>();
         _animator = GetComponent<Animator>();
 
-        // Get camera reference
         FindCameraReference();
 
-        // Initialize camera angles
         if (CinemachineCameraTarget != null)
         {
             _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
@@ -121,6 +120,15 @@ public class StackedController : MonoBehaviour
         }
     }
 
+    private void AssignAnimationIDs()
+    {
+        _animIDSpeed = Animator.StringToHash("Speed");
+        _animIDGrounded = Animator.StringToHash("Grounded");
+        _animIDJump = Animator.StringToHash("Jump");
+        _animIDFreeFall = Animator.StringToHash("FreeFall");
+        _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
+    }
+
     public void Initialize(StackManager.PlayerStackInfo bottom, StackManager.PlayerStackInfo top)
     {
         _bottomPlayer = bottom;
@@ -151,10 +159,10 @@ public class StackedController : MonoBehaviour
 
     private void Update()
     {
-        // Get inputs from both players
+        _hasAnimator = TryGetComponent(out _animator);
         GatherInputs();
 
-        // Handle movement and physics
+        // Handles movement and physics
         GroundedCheck();
         Move();
         JumpAndGravity();
@@ -173,70 +181,87 @@ public class StackedController : MonoBehaviour
         _jumpInput = false;
         _sprintInput = false;
 
-        // Get movement input from bottom player
-        if (_bottomPlayer?.inputHandler != null && _bottomPlayer.playerObject != null)
+
+        //  BOTTOM PLAYER INPUT
+
+        Vector2 bottomMove = Vector2.zero;
+        Vector2 bottomLook = Vector2.zero;
+
+        if (_bottomPlayer?.inputHandler != null)
         {
+            // Movement
             Vector2 rawMove = _bottomPlayer.inputHandler.move;
 
-            // Apply deadzone for gamepad
             if (!_bottomUsingMouse && rawMove.magnitude < MoveDeadzone)
-            {
-                _moveInput = Vector2.zero;
-            }
+                bottomMove = Vector2.zero;
             else
-            {
-                _moveInput = rawMove;
-            }
+                bottomMove = rawMove;
+
+            // Look
+            Vector2 rawLook = _bottomPlayer.inputHandler.look;
+
+            if (!_bottomUsingMouse && rawLook.magnitude < MoveDeadzone)
+                bottomLook = Vector2.zero;
+            else
+                bottomLook = rawLook;
 
             _sprintInput = _bottomPlayer.inputHandler.sprint;
             _jumpInput = _bottomPlayer.inputHandler.jump;
 
-            // Debug for movement
-            if (_moveInput.magnitude > 0.1f)
-                Debug.Log($"Bottom Player Move: {_moveInput}");
+            _moveInput = bottomMove;
+
+            // Device change detection
+            if (_bottomPlayer.playerInput != null)
+                _bottomUsingMouse = _bottomPlayer.playerInput.currentControlScheme == "KeyboardMouse";
         }
 
-        // Get look input from top player
-        if (_topPlayer?.inputHandler != null && _topPlayer.playerObject != null)
+        //  TOP PLAYER INPUT
+
+        Vector2 topLook = Vector2.zero;
+
+        if (_topPlayer?.inputHandler != null)
         {
             Vector2 rawLook = _topPlayer.inputHandler.look;
 
-            // Apply deadzone for gamepad
             if (!_topUsingMouse && rawLook.magnitude < MoveDeadzone)
-            {
-                _lookInput = Vector2.zero;
-            }
+                topLook = Vector2.zero;
             else
-            {
-                _lookInput = rawLook;
-            }
+                topLook = rawLook;
 
-            // Update device detection if it changed
+            // Device change detection
             if (_topPlayer.playerInput != null)
-            {
                 _topUsingMouse = _topPlayer.playerInput.currentControlScheme == "KeyboardMouse";
-            }
-
-            // Debug for look
-            if (_lookInput.magnitude > 0.1f)
-                Debug.Log($"Top Player Look: {_lookInput} (Using Mouse: {_topUsingMouse})");
         }
+
+        Vector2 combinedLook = bottomLook + topLook;
+
+        // Scale mouse vs controller differently
+        bool anyMouse = _topUsingMouse || _bottomUsingMouse;
+
+        if (anyMouse)
+            combinedLook *= MouseLookSensitivity;              // raw mouse movement
+        else
+            combinedLook *= GamepadLookSensitivity * Time.deltaTime; // analog stick movement
+
+        _lookInput = combinedLook;
+
+        // Debug
+        if (_lookInput.magnitude > 0.1f)
+            Debug.Log($"Merged Look = {_lookInput} (Bottom:{bottomLook}, Top:{topLook})");
     }
 
     private void Move()
     {
-        // set target speed based on move speed, sprint speed and if sprint is pressed
-        float targetSpeed = _sprintInput ? SprintSpeed : MoveSpeed;
+        float targetSpeed = _sprintInput? SprintSpeed : MoveSpeed;
         if (_moveInput == Vector2.zero) targetSpeed = 0.0f;
 
 
         float currentHorizontalSpeed = new Vector3(_controller.velocity.x, 0.0f, _controller.velocity.z).magnitude;
 
         float speedOffset = 0.1f;
-        //float inputMagnitude = _input.analogMovement ? _moveInput.magnitude : 1f;
-        float inputMagnitude =  _moveInput.magnitude;
+        float inputMagnitude = _moveInput.magnitude;
 
-        // accelerate or decelerate to target speed
+  
         if (currentHorizontalSpeed < targetSpeed - speedOffset ||
             currentHorizontalSpeed > targetSpeed + speedOffset)
         {
@@ -260,12 +285,17 @@ public class StackedController : MonoBehaviour
 
         if (_moveInput != Vector2.zero)
         {
-            _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
-                              _mainCamera.transform.eulerAngles.y;
-            float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
-                RotationSmoothTime);
+            _targetRotation =
+                Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
+                CinemachineCameraTarget.transform.eulerAngles.y;
 
-            // rotate to face input direction relative to camera position
+            float rotation = Mathf.SmoothDampAngle(
+                transform.eulerAngles.y,
+                _targetRotation,
+                ref _rotationVelocity,
+                RotationSmoothTime
+            );
+
             transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
         }
 
@@ -293,9 +323,13 @@ public class StackedController : MonoBehaviour
         Grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers,
             QueryTriggerInteraction.Ignore);
 
-        if (_animator != null)
-            _animator.SetBool("Grounded", Grounded);
+        if (_hasAnimator)
+        {
+            _animator.SetBool(_animIDGrounded, Grounded);
+        }
     }
+
+
 
     private void JumpAndGravity()
     {
@@ -306,7 +340,7 @@ public class StackedController : MonoBehaviour
             if (_verticalVelocity < 0.0f)
                 _verticalVelocity = -2f;
 
-            // Jump only if bottom player presses jump
+
             if (_jumpInput)
             {
                 _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
@@ -331,7 +365,6 @@ public class StackedController : MonoBehaviour
             }
         }
 
-        // Apply gravity
         if (_verticalVelocity < _terminalVelocity)
             _verticalVelocity += Gravity * Time.deltaTime;
     }
@@ -340,7 +373,6 @@ public class StackedController : MonoBehaviour
     {
         if (CinemachineCameraTarget == null) return;
 
-        // Only rotate if there's look input and camera isn't locked
         if (_lookInput.magnitude >= _threshold && !LockCameraPosition)
         {
             // Different multiplier for mouse vs controller
