@@ -172,11 +172,17 @@ public class PlayerInputHandler : MonoBehaviour
     {
         stack = newStackState;
 
-        if (stack)
+        if (!stack) return;
+
+        //if already stacked, unstack instead of stacking again
+        if (StackManager.Instance != null && StackManager.Instance.stackActive)
         {
-            // Find the other player and attempt to stack
-            FindAndStackWithOtherPlayer();
+            StackManager.Instance.Unstack();
+            return;
         }
+
+
+        FindAndStackWithOtherPlayer();
     }
 
     private void FindAndStackWithOtherPlayer()

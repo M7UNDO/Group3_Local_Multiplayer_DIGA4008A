@@ -123,7 +123,6 @@ public class StackManager : MonoBehaviour
         stackedController = currentStackedCharacter.GetComponent<StackedController>();
         stackedInputHandler = currentStackedCharacter.GetComponent<StackedInputHandler>();
 
-        // Configure the stacked controller with player info
         stackedController.Initialize(bottomPlayer, topPlayer);
 
         stackActive = true;
@@ -159,24 +158,34 @@ public class StackManager : MonoBehaviour
         if (!stackActive || currentStackedCharacter == null)
             return;
 
-        // Get positions for unstacking
         Vector3 bottomPos = currentStackedCharacter.transform.position;
         Vector3 topPos = bottomPos + Vector3.up * stackHeightOffset;
 
-        // Reactivate individual players
+        // Reactivate players + reposition
         foreach (var info in activePlayers)
         {
-            info.playerObject.SetActive(true);
-
             if (info.isTop)
                 info.playerObject.transform.position = topPos;
             else
                 info.playerObject.transform.position = bottomPos;
+
+            // Reactivate visible model
+            //info.playerObject.SetActive(true);
+            for(int i = 0; i < info.playerObject.transform.childCount; i++)
+            {
+                Transform child = info.playerObject.transform.GetChild(i);
+                child.gameObject.SetActive(true);
+            }
         }
 
-        // Destroy stacked character
+        // Re-enable all disabled components
+        EnableComponents(activePlayers[0], activePlayers[1]);
+
+
+
         Destroy(currentStackedCharacter);
         stackActive = false;
+
         Debug.Log("Stack broken");
     }
 }
