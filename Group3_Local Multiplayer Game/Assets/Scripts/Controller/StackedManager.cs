@@ -18,7 +18,7 @@ public class StackManager : MonoBehaviour
     [Header("Stack Settings")]
     public GameObject stackedCharacterPrefab;
     public float stackHeightOffset = 1.5f;
-    public KeyCode stackTestKey = KeyCode.F; // For testing, remove in final build
+    private bool unstackInProgress = false;
     public PlayerInputManager playerInputManager;
 
     [Header("Debug")]
@@ -29,7 +29,7 @@ public class StackManager : MonoBehaviour
     private StackedController stackedController;
     private StackedInputHandler stackedInputHandler;
 
-    // Singleton for easy access
+
     public static StackManager Instance;
 
     private void Awake()
@@ -67,8 +67,7 @@ public class StackManager : MonoBehaviour
         PlayerStackInfo bottomPlayer = null;
         PlayerStackInfo topPlayer = null;
 
-        // Determine who should be bottom and who should be top
-        // The requesting player becomes the bottom (controls movement)
+        // Determine who should be bottom and who should be top requesting player becomes the bottom
         foreach (var info in activePlayers)
         {
             if (info.playerObject == requestingPlayer)
@@ -83,7 +82,7 @@ public class StackManager : MonoBehaviour
             return;
         }
 
-        // Check if players are close enough to stack
+        // Checking player Distance here
         float distance = Vector3.Distance(bottomPlayer.playerObject.transform.position,
                                          topPlayer.playerObject.transform.position);
         if (distance > 3f)
@@ -101,7 +100,7 @@ public class StackManager : MonoBehaviour
         Vector3 stackPosition = bottomPlayer.playerObject.transform.position;
         stackPosition.y += stackHeightOffset;
 
-        // Deactivate individual players
+        // Deactivate player Children GameObjects
         for(int i = 0; i < bottomPlayer.playerObject.transform.childCount; i++)
         {
             Transform child = bottomPlayer.playerObject.transform.GetChild(i);
@@ -114,9 +113,8 @@ public class StackManager : MonoBehaviour
             child.gameObject.SetActive(false);
         }
 
+        // Disable Components
         DisableComponents(bottomPlayer, topPlayer);
-        //bottomPlayer.playerObject.SetActive(false);
-        //topPlayer.playerObject.SetActive(false);
 
         // Create stacked character
         currentStackedCharacter = Instantiate(stackedCharacterPrefab, stackPosition, Quaternion.identity);
@@ -126,7 +124,7 @@ public class StackManager : MonoBehaviour
         stackedController.Initialize(bottomPlayer, topPlayer);
 
         stackActive = true;
-        Debug.Log("Stack formed successfully!");
+        Debug.Log("Stack Formed successfully");
     }
 
     public void DisableComponents(PlayerStackInfo bottomPlayer, PlayerStackInfo topPlayer)
@@ -135,11 +133,9 @@ public class StackManager : MonoBehaviour
 
        bottomPlayer.playerObject.GetComponent<CharacterController>().enabled = false;
        bottomPlayer.playerObject.GetComponent<ThirdPersonController>().enabled = false;
-       //bottomPlayer.playerObject.GetComponent<PlayerInput>().enabled = false;
 
        topPlayer.playerObject.GetComponent<CharacterController>().enabled = false;
        topPlayer.playerObject.GetComponent<ThirdPersonController>().enabled = false;
-       //topPlayer.playerObject.GetComponent<PlayerInput>().enabled = false;
     }
 
     public void EnableComponents(PlayerStackInfo bottomPlayer, PlayerStackInfo topPlayer)
@@ -155,37 +151,53 @@ public class StackManager : MonoBehaviour
 
     public void Unstack()
     {
-        if (!stackActive || currentStackedCharacter == null)
+        if (!stackActive || unstackInProgress)
             return;
+
+        unstackInProgress = true;
+
+        if (currentStackedCharacter == null)
+        {
+            stackActive = false;
+            unstackInProgress = false;
+            return;
+        }
+
+        // Safe check for destroyed object
+        if (currentStackedCharacter == null)
+        {
+            stackActive = false;
+            unstackInProgress = false;
+            return;
+        }
 
         Vector3 bottomPos = currentStackedCharacter.transform.position;
         Vector3 topPos = bottomPos + Vector3.up * stackHeightOffset;
 
-        // Reactivate players + reposition
         foreach (var info in activePlayers)
         {
+            if (info == null || info.playerObject == null)
+                continue;
+
             if (info.isTop)
                 info.playerObject.transform.position = topPos;
             else
                 info.playerObject.transform.position = bottomPos;
 
-            // Reactivate visible model
-            //info.playerObject.SetActive(true);
-            for(int i = 0; i < info.playerObject.transform.childCount; i++)
-            {
-                Transform child = info.playerObject.transform.GetChild(i);
-                child.gameObject.SetActive(true);
-            }
+            for (int i = 0; i < info.playerObject.transform.childCount; i++)
+                info.playerObject.transform.GetChild(i).gameObject.SetActive(true);
         }
 
-        // Re-enable all disabled components
         EnableComponents(activePlayers[0], activePlayers[1]);
 
+        if (currentStackedCharacter != null)
+            Destroy(currentStackedCharacter);
 
-
-        Destroy(currentStackedCharacter);
+        currentStackedCharacter = null;
         stackActive = false;
 
-        Debug.Log("Stack broken");
+        unstackInProgress = false;
+
+        Debug.Log("Unstacked");
     }
 }
