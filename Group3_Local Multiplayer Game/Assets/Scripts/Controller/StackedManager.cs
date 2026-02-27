@@ -171,8 +171,16 @@ public class StackManager : MonoBehaviour
             return;
         }
 
-        Vector3 bottomPos = currentStackedCharacter.transform.position;
-        Vector3 topPos = bottomPos + Vector3.up * stackHeightOffset;
+        // Base position of the stacked player
+        Vector3 basePos = currentStackedCharacter.transform.position;
+
+        float separation = 1.0f;
+
+        // Bottom player to the left
+        Vector3 bottomPos = basePos + Vector3.left * separation;
+
+        // Top player to the right
+        Vector3 topPos = basePos + Vector3.right * separation;
 
         foreach (var info in activePlayers)
         {
