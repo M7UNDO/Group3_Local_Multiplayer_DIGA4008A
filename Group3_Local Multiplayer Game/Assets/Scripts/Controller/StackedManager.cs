@@ -1,6 +1,7 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.Collections.Generic;
 
 public class StackManager : MonoBehaviour
 {
@@ -96,41 +97,86 @@ public class StackManager : MonoBehaviour
 
     private void PerformStack(PlayerStackInfo bottomPlayer, PlayerStackInfo topPlayer)
     {
-        // Store position for stacked character
         Vector3 stackPosition = bottomPlayer.playerObject.transform.position;
         stackPosition.y += stackHeightOffset;
 
-        // Deactivate player Children GameObjects
-        for(int i = 0; i < bottomPlayer.playerObject.transform.childCount; i++)
-        {
-            Transform child = bottomPlayer.playerObject.transform.GetChild(i);
-            child.gameObject.SetActive(false);
-        }
 
-        for(int i = 0; i < topPlayer.playerObject.transform.childCount; i++)
-        {
-            Transform child = topPlayer.playerObject.transform.GetChild(i);
-            child.gameObject.SetActive(false);
-        }
+        SetChildrenActive(bottomPlayer.playerObject, false);
+        SetChildrenActive(topPlayer.playerObject, false);
 
-        // Disable Components
         DisableComponents(bottomPlayer, topPlayer);
 
         // Create stacked character
         currentStackedCharacter = Instantiate(stackedCharacterPrefab, stackPosition, Quaternion.identity);
+
         stackedController = currentStackedCharacter.GetComponent<StackedController>();
         stackedInputHandler = currentStackedCharacter.GetComponent<StackedInputHandler>();
-
         stackedController.Initialize(bottomPlayer, topPlayer);
 
+        // Hide meshes initially
+        SetMeshesActive(currentStackedCharacter, false);
+
+        // Play smoke, then reveal meshes
+        StartCoroutine(PlaySmokeThenShowMeshes(currentStackedCharacter));
+
         stackActive = true;
-        Debug.Log("Stack Formed successfully");
+
+        Debug.Log("Stack formed successfully!");
+    }
+
+    private void SetMeshesActive(GameObject obj, bool active)
+    {
+        MeshRenderer[] meshes = obj.GetComponentsInChildren<MeshRenderer>(true);
+        foreach (var mesh in meshes)
+            mesh.enabled = active;
+    }
+
+    private IEnumerator PlaySmokeThenShowMeshes(GameObject stackedObj)
+    {
+        SetMeshesActive(stackedObj, false);
+
+        ParticleSystem[] particles = stackedObj.GetComponentsInChildren<ParticleSystem>(true);
+        ParticleSystem triggerPS = null;
+
+        foreach (var ps in particles)
+        {
+            ps.gameObject.SetActive(true);
+
+            if (ps.name == "MagicPoof")
+                triggerPS = ps;
+
+            ps.Play();
+        }
+
+        // Wait until the trigger particle has started playing
+        if (triggerPS != null)
+        {
+            
+            float startDelay = triggerPS.main.startDelay.constant;
+            yield return new WaitForSeconds(startDelay + 0.05f);
+        }
+        else
+        {
+            // fallback
+            yield return new WaitForSeconds(0.2f);
+        }
+
+        SetMeshesActive(stackedObj, true);
+    }
+
+    private void SetChildrenActive(GameObject obj, bool active)
+    {
+        for (int i = 0; i < obj.transform.childCount; i++)
+        {
+            obj.transform.GetChild(i).gameObject.SetActive(active);
+        }
     }
 
     public void DisableComponents(PlayerStackInfo bottomPlayer, PlayerStackInfo topPlayer)
     {
         playerInputManager.splitScreen = false;
 
+       bottomPlayer.playerObject.GetComponent<CharacterController>().enabled = false;
        bottomPlayer.playerObject.GetComponent<CharacterController>().enabled = false;
        bottomPlayer.playerObject.GetComponent<ThirdPersonController>().enabled = false;
 
@@ -148,6 +194,7 @@ public class StackManager : MonoBehaviour
         topPlayer.playerObject.GetComponent<CharacterController>().enabled = true;
         topPlayer.playerObject.GetComponent<ThirdPersonController>().enabled = true;
     }
+
 
     public void Unstack()
     {
