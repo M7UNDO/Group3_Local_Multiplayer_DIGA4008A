@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static UnityEngine.ParticleSystem;
 
 public class StackManager : MonoBehaviour
 {
@@ -24,6 +25,9 @@ public class StackManager : MonoBehaviour
 
     [Header("Debug")]
     public bool stackActive = false;
+
+    private PlayerStackInfo stackedBottomPlayer;
+    private PlayerStackInfo stackedTopPlayer;
 
     private List<PlayerStackInfo> activePlayers = new List<PlayerStackInfo>();
     private GameObject currentStackedCharacter;
@@ -54,7 +58,7 @@ public class StackManager : MonoBehaviour
         };
 
         activePlayers.Add(info);
-        Debug.Log($"Player {playerIndex} registered for stacking");
+        //Debug.Log($"Player {playerIndex} registered for stacking");
     }
 
     public void AttemptStack(GameObject requestingPlayer, GameObject otherPlayer)
@@ -68,7 +72,7 @@ public class StackManager : MonoBehaviour
         PlayerStackInfo bottomPlayer = null;
         PlayerStackInfo topPlayer = null;
 
-        // Determine who should be bottom and who should be top requesting player becomes the bottom
+        // Check for who is the requesting player
         foreach (var info in activePlayers)
         {
             if (info.playerObject == requestingPlayer)
@@ -95,6 +99,7 @@ public class StackManager : MonoBehaviour
         PerformStack(bottomPlayer, topPlayer);
     }
 
+
     private void PerformStack(PlayerStackInfo bottomPlayer, PlayerStackInfo topPlayer)
     {
         Vector3 stackPosition = bottomPlayer.playerObject.transform.position;
@@ -106,63 +111,91 @@ public class StackManager : MonoBehaviour
 
         DisableComponents(bottomPlayer, topPlayer);
 
-        // Create stacked character
         currentStackedCharacter = Instantiate(stackedCharacterPrefab, stackPosition, Quaternion.identity);
 
         stackedController = currentStackedCharacter.GetComponent<StackedController>();
         stackedInputHandler = currentStackedCharacter.GetComponent<StackedInputHandler>();
         stackedController.Initialize(bottomPlayer, topPlayer);
 
-        // Hide meshes initially
+        stackedBottomPlayer = bottomPlayer;
+        stackedTopPlayer = topPlayer;
+        stackedBottomPlayer.isTop = false;
+        stackedTopPlayer.isTop = true;
+
+        // Visually hiding the mesh for the VFX 
         SetMeshesActive(currentStackedCharacter, false);
 
-        // Play smoke, then reveal meshes
-        StartCoroutine(PlaySmokeThenShowMeshes(currentStackedCharacter));
+        // Play VFX Particle, then reveal stacked character
+        StartCoroutine(PlaySmokeThenShowMeshes(currentStackedCharacter, "MagicPoof"));
 
         stackActive = true;
 
         Debug.Log("Stack formed successfully!");
     }
 
-    private void SetMeshesActive(GameObject obj, bool active)
+    public void SetMeshesActive(GameObject obj, bool active)
     {
         MeshRenderer[] meshes = obj.GetComponentsInChildren<MeshRenderer>(true);
         foreach (var mesh in meshes)
             mesh.enabled = active;
     }
 
-    private IEnumerator PlaySmokeThenShowMeshes(GameObject stackedObj)
-    {
-        SetMeshesActive(stackedObj, false);
 
-        ParticleSystem[] particles = stackedObj.GetComponentsInChildren<ParticleSystem>(true);
+
+    private IEnumerator PlaySmokeThenShowMeshes(GameObject obj, string particleName)
+    {
+        Debug.Log("PlayerCheck: "+ obj);
+        if (obj == null) yield break;
+
+        ParticleSystem[] particles = null;
+
+
+        try
+        {
+            particles = obj.GetComponentsInChildren<ParticleSystem>(true);
+        }
+        catch
+        {
+            yield break;
+        }
+
+        if (particles == null || particles.Length == 0)
+            yield break;
+
         ParticleSystem triggerPS = null;
 
         foreach (var ps in particles)
         {
+            if (ps == null || ps.gameObject == null)
+                continue;
+
             ps.gameObject.SetActive(true);
 
-            if (ps.name == "MagicPoof")
+            if (ps.name == particleName)
                 triggerPS = ps;
 
             ps.Play();
+
+            
         }
 
         // Wait until the trigger particle has started playing
-        if (triggerPS != null)
+        if (triggerPS != null && triggerPS.gameObject != null) // Check if triggerPS and its gameObject are not null
         {
-            
             float startDelay = triggerPS.main.startDelay.constant;
             yield return new WaitForSeconds(startDelay + 0.05f);
         }
         else
         {
-            // fallback
             yield return new WaitForSeconds(0.2f);
         }
 
-        SetMeshesActive(stackedObj, true);
+        if (obj != null)
+        {
+            SetMeshesActive(obj, true);
+        }
     }
+
 
     private void SetChildrenActive(GameObject obj, bool active)
     {
@@ -176,7 +209,6 @@ public class StackManager : MonoBehaviour
     {
         playerInputManager.splitScreen = false;
 
-       bottomPlayer.playerObject.GetComponent<CharacterController>().enabled = false;
        bottomPlayer.playerObject.GetComponent<CharacterController>().enabled = false;
        bottomPlayer.playerObject.GetComponent<ThirdPersonController>().enabled = false;
 
@@ -198,6 +230,7 @@ public class StackManager : MonoBehaviour
 
     public void Unstack()
     {
+
         if (!stackActive || unstackInProgress)
             return;
 
@@ -218,29 +251,28 @@ public class StackManager : MonoBehaviour
             return;
         }
 
-        // Base position of the stacked player
         Vector3 basePos = currentStackedCharacter.transform.position;
 
         float separation = 1.0f;
 
-        // Bottom player to the left
         Vector3 bottomPos = basePos + Vector3.left * separation;
 
-        // Top player to the right
         Vector3 topPos = basePos + Vector3.right * separation;
 
-        foreach (var info in activePlayers)
+        if (stackedBottomPlayer.playerObject != null)
         {
-            if (info == null || info.playerObject == null)
-                continue;
+            stackedBottomPlayer.playerObject.transform.position = bottomPos;
+            SetChildrenActive(stackedBottomPlayer.playerObject, true);
+            SetMeshesActive(stackedBottomPlayer.playerObject, true);
+            StartCoroutine(PlaySmokeThenShowMeshes(stackedBottomPlayer.playerObject, "SmokeEffect"));
+        }
 
-            if (info.isTop)
-                info.playerObject.transform.position = topPos;
-            else
-                info.playerObject.transform.position = bottomPos;
-
-            for (int i = 0; i < info.playerObject.transform.childCount; i++)
-                info.playerObject.transform.GetChild(i).gameObject.SetActive(true);
+        if (stackedTopPlayer.playerObject != null)
+        {
+            stackedTopPlayer.playerObject.transform.position = topPos;
+            SetChildrenActive(stackedTopPlayer.playerObject, true);
+            SetMeshesActive(stackedTopPlayer.playerObject, true);
+            StartCoroutine(PlaySmokeThenShowMeshes(stackedTopPlayer.playerObject, "SmokeEffect"));
         }
 
         EnableComponents(activePlayers[0], activePlayers[1]);

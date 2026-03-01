@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Cinemachine;
 using UnityEngine;
@@ -43,8 +44,14 @@ public class PlayerManager : MonoBehaviour
         Transform spawnPoint = startingPoints[spawnIndex];
 
         Transform playerTransform = player.transform;
-        playerTransform.position = spawnPoint.position;
-        playerTransform.rotation = spawnPoint.rotation;
+        //playerTransform.position = spawnPoint.position;
+        //playerTransform.rotation = spawnPoint.rotation;
+        StartCoroutine(PlacePlayerNextFrame(player, spawnPoint));
+
+        /*foreach(PlayerInput p in players)
+        {
+            stackManager.SetMeshesActive(p.gameObject, true);
+        }*/
 
         int channel = player.playerIndex;
 
@@ -74,6 +81,23 @@ public class PlayerManager : MonoBehaviour
         }
 
         Debug.Log($"Player {player.playerIndex} spawned at position {spawnIndex}");
+    }
+
+    private IEnumerator PlacePlayerNextFrame(PlayerInput player, Transform spawnPoint)
+    {
+        yield return null; // wait 1 frame
+
+        Transform t = player.transform;
+
+        // Disable CharacterController so it doesn't override the spawn position
+        var cc = t.GetComponent<CharacterController>();
+        if (cc != null) cc.enabled = false;
+
+        t.position = spawnPoint.position;
+        t.rotation = spawnPoint.rotation;
+
+        if (cc != null) cc.enabled = true;
+
     }
 
     public List<GameObject> GetAllActivePlayers()

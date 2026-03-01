@@ -3,11 +3,16 @@ using UnityEngine.InputSystem;
 
 public class ToggleOnPlayerJoin : MonoBehaviour
 {
-    private PlayerInputManager playerInputManager;
+    [SerializeField] private PlayerInputManager playerInputManager;
+    public GameObject[] temporaryObjects;
 
     private void Awake()
     {
         playerInputManager = FindFirstObjectByType<PlayerInputManager>();
+        if(playerInputManager != null)
+        {
+            print("Player Input manager Found");
+        }
     }
 
     private void OnEnable()
@@ -20,8 +25,11 @@ public class ToggleOnPlayerJoin : MonoBehaviour
         playerInputManager.onPlayerJoined -= ToggleThis;
     }
 
-    private void ToggleThis(PlayerInput player)
+    public void ToggleThis(PlayerInput player)
     {
-        this.gameObject.SetActive(false);
+        foreach (var obj in temporaryObjects)
+        {
+            obj.SetActive(false);
+        }
     }
 }

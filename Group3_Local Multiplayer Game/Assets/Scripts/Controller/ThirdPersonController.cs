@@ -85,7 +85,7 @@ public class ThirdPersonController : MonoBehaviour
 
     private void Awake()
     {
-        // get a reference to our main camera
+
         if (_mainCamera == null)
         {
             _mainCamera = _playerCam.gameObject;
