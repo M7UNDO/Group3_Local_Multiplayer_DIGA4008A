@@ -61,6 +61,34 @@ public class StackManager : MonoBehaviour
         //Debug.Log($"Player {playerIndex} registered for stacking");
     }
 
+    private void Update()
+    {
+        if (activePlayers.Count < 2 || stackActive)
+        {
+            //UIManager.Instance.HideAllPrompts();
+            return;
+        }
+
+        var p1 = activePlayers[0].playerObject.transform;
+        var p2 = activePlayers[1].playerObject.transform;
+
+        float dist = Vector3.Distance(p1.position, p2.position);
+
+        if (dist < 3f)
+        {
+            activePlayers[0].playerObject.GetComponent<PlayerUI>().StackPromptDisplay(true);
+            activePlayers[1].playerObject.GetComponent<PlayerUI>().StackPromptDisplay(true);
+        }
+        else
+        {
+            activePlayers[0].playerObject.GetComponent<PlayerUI>().StackPromptDisplay(false);
+            activePlayers[1].playerObject.GetComponent<PlayerUI>().StackPromptDisplay(false);
+        }
+            
+    }
+
+    
+
     public void AttemptStack(GameObject requestingPlayer, GameObject otherPlayer)
     {
         if (stackActive)
@@ -90,9 +118,11 @@ public class StackManager : MonoBehaviour
         // Checking player Distance here
         float distance = Vector3.Distance(bottomPlayer.playerObject.transform.position,
                                          topPlayer.playerObject.transform.position);
+
         if (distance > 3f)
         {
             Debug.Log("Players are too far apart to stack");
+            //UIManager.Instance.ShowTooFarPrompt();
             return;
         }
 
