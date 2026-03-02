@@ -32,35 +32,30 @@ public class PlayerManager : MonoBehaviour
     {
         players.Add(player);
 
-        // SAFETY CHECK: Make sure we have enough starting points
+
         if (startingPoints == null || startingPoints.Count == 0)
         {
             Debug.LogError("No starting points assigned in PlayerManager!");
             return;
         }
 
-        // Get the spawn point index (use modulo to cycle through points if needed)
+
         int spawnIndex = (players.Count - 1) % startingPoints.Count;
         Transform spawnPoint = startingPoints[spawnIndex];
 
         Transform playerTransform = player.transform;
-        //playerTransform.position = spawnPoint.position;
-        //playerTransform.rotation = spawnPoint.rotation;
+
         StartCoroutine(PlacePlayerNextFrame(player, spawnPoint));
 
-        /*foreach(PlayerInput p in players)
-        {
-            stackManager.SetMeshesActive(p.gameObject, true);
-        }*/
 
         int channel = player.playerIndex;
 
-        // Setup Cinemachine
+    
         CinemachineCamera cineCam = playerTransform.GetComponentInChildren<CinemachineCamera>();
         if (cineCam != null)
             cineCam.OutputChannel = (Unity.Cinemachine.OutputChannels)(1 << channel);
 
-        // Setup CinemachineBrain
+
         Camera playerCamera = playerTransform.GetComponentInChildren<Camera>();
         if (playerCamera != null)
         {
@@ -69,18 +64,18 @@ public class PlayerManager : MonoBehaviour
                 brain.ChannelMask = (Unity.Cinemachine.OutputChannels)(1 << channel);
         }
 
-        // Handle AudioListener
+
         AudioListener listener = playerTransform.GetComponentInChildren<AudioListener>();
         if (listener != null)
-            listener.enabled = players.Count == 1; // Only first player has audio
+            listener.enabled = players.Count == 1;
 
-        // Register player with StackManager
+
         if (stackManager != null)
         {
             stackManager.RegisterPlayer(player.gameObject, player.playerIndex);
         }
 
-        Debug.Log($"Player {player.playerIndex} spawned at position {spawnIndex}");
+        //Debug.Log($"Player {player.playerIndex} spawned at position {spawnIndex}");
     }
 
     private IEnumerator PlacePlayerNextFrame(PlayerInput player, Transform spawnPoint)

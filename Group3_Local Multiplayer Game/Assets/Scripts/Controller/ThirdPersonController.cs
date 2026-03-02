@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 public class ThirdPersonController : MonoBehaviour
 {
     [Header("Player")]
+    public static bool canMove { get; private set; } = true;
     public float MoveSpeed = 2.0f;
     public float SprintSpeed = 5.335f;
     [Range(0.0f, 0.3f)]
@@ -112,9 +113,16 @@ public class ThirdPersonController : MonoBehaviour
         _fallTimeoutDelta = FallTimeout;
     }
 
+    public static void SetMovement(bool isAbleToMove)
+    {
+        canMove = isAbleToMove;
+    }
+
     private void Update()
     {
         if (PauseScript.IsGamePaused) return;
+        
+        if(!canMove) return;
 
         _hasAnimator = TryGetComponent(out _animator);
 
@@ -126,6 +134,8 @@ public class ThirdPersonController : MonoBehaviour
     private void LateUpdate()
     {
         if (PauseScript.IsGamePaused) return;
+
+        if (!canMove) return;
         CameraRotation();
     }
 

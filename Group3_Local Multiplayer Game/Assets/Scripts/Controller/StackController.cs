@@ -10,9 +10,21 @@ public class StackedController : MonoBehaviour
     public float RotationSmoothTime = 0.12f;
     public float SpeedChangeRate = 10.0f;
 
+    public static bool canMove {  get; private set; } = true;
+
+    public AudioClip LandingAudioClip;
+    public AudioClip[] FootstepAudioClips;
+    [Range(0, 1)] public float FootstepAudioVolume = 0.5f;
+
     [Header("Jump Settings")]
     public float JumpHeight = 1.2f;
     public float Gravity = -15.0f;
+
+    public float JumpTimeout = 0.5f;
+    public float FallTimeout = 0.15f;
+
+    private float _jumpTimeoutDelta;
+    private float _fallTimeoutDelta;
 
     [Header("Grounded Settings")]
     public bool Grounded = true;
@@ -38,7 +50,7 @@ public class StackedController : MonoBehaviour
 
     [Header("Components")]
     private CharacterController _controller;
-    private Animator _animator;
+    [SerializeField]private Animator _animator;
     private GameObject _mainCamera;
 
     private bool _hasAnimator;
@@ -109,6 +121,7 @@ public class StackedController : MonoBehaviour
 
     private void Start()
     {
+        _hasAnimator = TryGetComponent(out _animator);
         if (CinemachineCameraTarget == null)
         {
             Debug.LogError("CinemachineCameraTarget is not assigned on StackedController!", this);
@@ -118,6 +131,16 @@ public class StackedController : MonoBehaviour
         {
             Debug.LogError("Main camera reference could not be found!", this);
         }
+
+        AssignAnimationIDs();
+
+        _jumpTimeoutDelta = JumpTimeout;
+        _fallTimeoutDelta = FallTimeout;
+    }
+
+    public static void SetMovement(bool isAbleToMove)
+    {
+        canMove = isAbleToMove;
     }
 
     private void AssignAnimationIDs()
@@ -154,13 +177,13 @@ public class StackedController : MonoBehaviour
             }
         }
 
-        Debug.Log($"StackedController initialized: Bottom Player {bottom?.playerIndex} (Using Mouse: {_bottomUsingMouse}), Top Player {top?.playerIndex} (Using Mouse: {_topUsingMouse})");
+        //Debug.Log($"StackedController initialized: Bottom Player {bottom?.playerIndex} (Using Mouse: {_bottomUsingMouse}), Top Player {top?.playerIndex} (Using Mouse: {_topUsingMouse})");
     }
 
     private void Update()
     {
         if (PauseScript.IsGamePaused) return;
-        _hasAnimator = TryGetComponent(out _animator);
+        if (!canMove) return;
         GatherInputs();
 
         // Handles movement and physics
@@ -172,6 +195,8 @@ public class StackedController : MonoBehaviour
     private void LateUpdate()
     {
         if (PauseScript.IsGamePaused) return;
+
+        if (!canMove) return;
         CameraRotation();
     }
 
@@ -334,36 +359,42 @@ public class StackedController : MonoBehaviour
 
     private void JumpAndGravity()
     {
-        if (_controller == null) return;
-
         if (Grounded)
         {
+            _fallTimeoutDelta = FallTimeout;
+
             if (_verticalVelocity < 0.0f)
                 _verticalVelocity = -2f;
 
-
-            if (_jumpInput)
+            if (_jumpInput && _jumpTimeoutDelta <= 0.0f)
             {
                 _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
-                if (_animator != null)
-                    _animator.SetBool("Jump", true);
+                _animator.SetBool(_animIDJump, true);
             }
             else
             {
-                if (_animator != null)
-                    _animator.SetBool("Jump", false);
+                _animator.SetBool(_animIDJump, false);
             }
 
-            if (_animator != null)
-                _animator.SetBool("FreeFall", false);
+            if (_jumpTimeoutDelta >= 0.0f)
+                _jumpTimeoutDelta -= Time.deltaTime;
+
+            _animator.SetBool(_animIDFreeFall, false);
         }
         else
         {
-            if (_animator != null)
+            _jumpTimeoutDelta = JumpTimeout;
+
+            if (_fallTimeoutDelta >= 0.0f)
             {
-                _animator.SetBool("FreeFall", true);
-                _animator.SetBool("Jump", false);
+                _fallTimeoutDelta -= Time.deltaTime;
             }
+            else
+            {
+                _animator.SetBool(_animIDFreeFall, true);
+            }
+
+            _animator.SetBool(_animIDJump, false);
         }
 
         if (_verticalVelocity < _terminalVelocity)
@@ -415,37 +446,6 @@ public class StackedController : MonoBehaviour
         return Mathf.Clamp(lfAngle, lfMin, lfMax);
     }
 
-    /*Debug visualization
-    private void OnGUI()
-    {
-        if (!Debug.isDebugBuild) return;
-
-        int y = 10;
-        int lineHeight = 25;
-
-        GUI.Label(new Rect(10, y, 400, lineHeight), $"Move Input: {_moveInput} (Magnitude: {_moveInput.magnitude:F2})");
-        y += lineHeight;
-
-        GUI.Label(new Rect(10, y, 400, lineHeight), $"Look Input: {_lookInput} (Magnitude: {_lookInput.magnitude:F2})");
-        y += lineHeight;
-
-        GUI.Label(new Rect(10, y, 400, lineHeight), $"Jump: {_jumpInput}, Sprint: {_sprintInput}");
-        y += lineHeight;
-
-        GUI.Label(new Rect(10, y, 400, lineHeight), $"Grounded: {Grounded}, Speed: {_speed:F2}");
-        y += lineHeight;
-
-        GUI.Label(new Rect(10, y, 400, lineHeight), $"Bottom Using Mouse: {_bottomUsingMouse}, Top Using Mouse: {_topUsingMouse}");
-        y += lineHeight;
-
-        if (_bottomPlayer != null)
-            GUI.Label(new Rect(10, y, 400, lineHeight), $"Bottom Player Active: {_bottomPlayer.playerObject?.activeInHierarchy}");
-        y += lineHeight;
-
-        if (_topPlayer != null)
-            GUI.Label(new Rect(10, y, 400, lineHeight), $"Top Player Active: {_topPlayer.playerObject?.activeInHierarchy}");
-    }*/
-
     private void OnDrawGizmosSelected()
     {
         // Draw grounded check sphere
@@ -456,5 +456,25 @@ public class StackedController : MonoBehaviour
         Gizmos.DrawSphere(
             new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z),
             GroundedRadius);
+    }
+
+    private void OnFootstep(AnimationEvent animationEvent)
+    {
+        if (animationEvent.animatorClipInfo.weight > 0.5f)
+        {
+            if (FootstepAudioClips.Length > 0)
+            {
+                var index = Random.Range(0, FootstepAudioClips.Length);
+                AudioSource.PlayClipAtPoint(FootstepAudioClips[index], transform.TransformPoint(_controller.center), FootstepAudioVolume);
+            }
+        }
+    }
+
+    private void OnLand(AnimationEvent animationEvent)
+    {
+        if (animationEvent.animatorClipInfo.weight > 0.5f)
+        {
+            AudioSource.PlayClipAtPoint(LandingAudioClip, transform.TransformPoint(_controller.center), FootstepAudioVolume);
+        }
     }
 }

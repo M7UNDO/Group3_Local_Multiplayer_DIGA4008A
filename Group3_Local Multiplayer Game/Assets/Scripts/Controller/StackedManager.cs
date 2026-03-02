@@ -132,6 +132,8 @@ public class StackManager : MonoBehaviour
 
     private void PerformStack(PlayerStackInfo bottomPlayer, PlayerStackInfo topPlayer)
     {
+        ThirdPersonController.SetMovement(false);
+
         Vector3 stackPosition = bottomPlayer.playerObject.transform.position;
         stackPosition.y += stackHeightOffset;
 
@@ -142,6 +144,7 @@ public class StackManager : MonoBehaviour
         DisableComponents(bottomPlayer, topPlayer);
 
         currentStackedCharacter = Instantiate(stackedCharacterPrefab, stackPosition, Quaternion.identity);
+        StackedController.SetMovement(false);
 
         stackedController = currentStackedCharacter.GetComponent<StackedController>();
         stackedInputHandler = currentStackedCharacter.GetComponent<StackedInputHandler>();
@@ -157,10 +160,11 @@ public class StackManager : MonoBehaviour
 
         // Play VFX Particle, then reveal stacked character
         StartCoroutine(PlaySmokeThenShowMeshes(currentStackedCharacter, "MagicPoof"));
+        StartCoroutine(EnableStackedPlayersAfterVFX());
 
         stackActive = true;
 
-        Debug.Log("Stack formed successfully!");
+        //Debug.Log("Stack formed successfully!");
     }
 
     public void SetMeshesActive(GameObject obj, bool active)
@@ -224,6 +228,27 @@ public class StackManager : MonoBehaviour
         {
             SetMeshesActive(obj, true);
         }
+    }
+
+    private IEnumerator EnablePlayersAfterVFX()
+    {
+
+        yield return new WaitForSeconds(0.5f);
+
+        if (stackedBottomPlayer != null && stackedTopPlayer != null)
+        {
+            EnableComponents(stackedBottomPlayer, stackedTopPlayer);
+        }
+
+        ThirdPersonController.SetMovement(true);
+
+        unstackInProgress = false;
+        stackActive = false;
+    }
+    private IEnumerator EnableStackedPlayersAfterVFX()
+    {
+        yield return new WaitForSeconds(1.2f);
+        StackedController.SetMovement(true);
     }
 
 
@@ -294,7 +319,7 @@ public class StackManager : MonoBehaviour
             stackedBottomPlayer.playerObject.transform.position = bottomPos;
             SetChildrenActive(stackedBottomPlayer.playerObject, true);
             SetMeshesActive(stackedBottomPlayer.playerObject, true);
-            StartCoroutine(PlaySmokeThenShowMeshes(stackedBottomPlayer.playerObject, "SmokeEffect"));
+            StartCoroutine(PlaySmokeThenShowMeshes(stackedBottomPlayer.playerObject, "HitSmoke"));
         }
 
         if (stackedTopPlayer.playerObject != null)
@@ -302,8 +327,10 @@ public class StackManager : MonoBehaviour
             stackedTopPlayer.playerObject.transform.position = topPos;
             SetChildrenActive(stackedTopPlayer.playerObject, true);
             SetMeshesActive(stackedTopPlayer.playerObject, true);
-            StartCoroutine(PlaySmokeThenShowMeshes(stackedTopPlayer.playerObject, "SmokeEffect"));
+            StartCoroutine(PlaySmokeThenShowMeshes(stackedTopPlayer.playerObject, "HitSmoke"));
         }
+
+        StartCoroutine(EnablePlayersAfterVFX());
 
         EnableComponents(activePlayers[0], activePlayers[1]);
 
@@ -315,6 +342,6 @@ public class StackManager : MonoBehaviour
 
         unstackInProgress = false;
 
-        Debug.Log("Unstacked");
+        //Debug.Log("Unstacked");
     }
 }
