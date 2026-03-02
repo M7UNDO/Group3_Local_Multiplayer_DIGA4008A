@@ -159,6 +159,7 @@ public class StackedController : MonoBehaviour
 
     private void Update()
     {
+        if (PauseScript.IsGamePaused) return;
         _hasAnimator = TryGetComponent(out _animator);
         GatherInputs();
 
@@ -170,19 +171,19 @@ public class StackedController : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (PauseScript.IsGamePaused) return;
         CameraRotation();
     }
 
     private void GatherInputs()
     {
-        // Reset inputs
         _moveInput = Vector2.zero;
         _lookInput = Vector2.zero;
         _jumpInput = false;
         _sprintInput = false;
 
 
-        //  BOTTOM PLAYER INPUT
+        // BOTTOM PLAYER INPUT
 
         Vector2 bottomMove = Vector2.zero;
         Vector2 bottomLook = Vector2.zero;
@@ -215,7 +216,7 @@ public class StackedController : MonoBehaviour
                 _bottomUsingMouse = _bottomPlayer.playerInput.currentControlScheme == "KeyboardMouse";
         }
 
-        //  TOP PLAYER INPUT
+        // TOP PLAYER INPUT
 
         Vector2 topLook = Vector2.zero;
 
@@ -246,8 +247,8 @@ public class StackedController : MonoBehaviour
         _lookInput = combinedLook;
 
         // Debug
-        if (_lookInput.magnitude > 0.1f)
-            Debug.Log($"Merged Look = {_lookInput} (Bottom:{bottomLook}, Top:{topLook})");
+        /*if (_lookInput.magnitude > 0.1f)
+            Debug.Log($"Merged Look = {_lookInput} (Bottom:{bottomLook}, Top:{topLook})");*/
     }
 
     private void Move()
@@ -414,7 +415,7 @@ public class StackedController : MonoBehaviour
         return Mathf.Clamp(lfAngle, lfMin, lfMax);
     }
 
-    // Debug visualization
+    /*Debug visualization
     private void OnGUI()
     {
         if (!Debug.isDebugBuild) return;
@@ -443,7 +444,7 @@ public class StackedController : MonoBehaviour
 
         if (_topPlayer != null)
             GUI.Label(new Rect(10, y, 400, lineHeight), $"Top Player Active: {_topPlayer.playerObject?.activeInHierarchy}");
-    }
+    }*/
 
     private void OnDrawGizmosSelected()
     {

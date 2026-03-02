@@ -4,15 +4,22 @@ using UnityEngine.SceneManagement;
 
 public class PauseScript : MonoBehaviour
 {
+    [Header("References")]
+    [Space(5)]
     private bool toggle;
     private PlayerControls playerControls;
-    private int levelRestart = 1;
-    private System.Action<InputAction.CallbackContext> pauseAction;
 
     [Header("Pause UI Elements")]
     [Space(5)]
     public GameObject pausePanel;
-    [SerializeField] private ManageUI manageUI;
+
+    [SerializeField]
+    private ManageUI manageUI;
+
+    [Header("Pause Settings")]
+    [Space(5)]
+    private System.Action<InputAction.CallbackContext> pauseAction;
+    public static bool IsGamePaused { get; private set; } = false;
 
     private void OnEnable()
     {
@@ -29,43 +36,36 @@ public class PauseScript : MonoBehaviour
         playerControls.Player.Disable();
     }
 
+    public static void SetPause(bool paused)
+    {
+        IsGamePaused = paused;
+    }
+
     public void Pause()
     {
-        if (manageUI.controlUIPanel.activeSelf)
+        if (manageUI.settingsPanel.activeSelf)
         {
-            manageUI.ControlPanel();
+            manageUI.SettingsPanel();
             return;
         }
-        else if (manageUI.audioUIPanel.activeSelf)
-        {
-            manageUI.AudioPanel();
-            return;
-        }
-
 
         toggle = !toggle;
 
         if (toggle)
         {
             pausePanel.SetActive(true);
-            Time.timeScale = 0f;
+            IsGamePaused = true;
         }
         else
         {
             pausePanel.SetActive(false);
-            Time.timeScale = 1f;
+            IsGamePaused = false;
         }
-
-    }
-
-    public void CompleteRestartGame()
-    {
-        SceneManager.LoadScene(levelRestart);
-        Time.timeScale = 1f;
     }
 
     public void LoadMainMenu()
     {
+        IsGamePaused = false;
         SceneManager.LoadScene("MainMenu");
         Time.timeScale = 1f;
     }

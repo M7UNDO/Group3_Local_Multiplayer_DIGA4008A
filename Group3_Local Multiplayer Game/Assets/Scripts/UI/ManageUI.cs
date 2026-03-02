@@ -6,18 +6,15 @@ using UnityEngine.UI;
 
 public class ManageUI : MonoBehaviour
 {
+    private bool toggle;
+
     [Header("UI Elements")]
     [Space(5)]
     public Animator animator;
-
-    [Header("Panels")]
     public GameObject controlUIPanel;
-    public GameObject audioUIPanel;
+    public GameObject settingsPanel;
     public bool hasMenuElements;
     public GameObject[] menuUIElements;
-    public HighlightText highlightText;
-    public TextMeshProUGUI[] buttonTxt;
-
     /*
     [Header("Saving states")]
     [Space(5)]
@@ -25,83 +22,128 @@ public class ManageUI : MonoBehaviour
     public Color savedColour;
     public Color resetColour;
 
-    [Header("Levels Index")]
+    [Header("Main Menu Buttons")]
     [Space(5)]
+    public bool isMainMenu;
+    public Button continueButton;
+    public Button newGameButton;
 
-    public int level; // Current level index
-    public int tutorialLevel = 1;
-    public int mainLevel = 2;*/
+    [Header("Confirmation UI")]
+    [Space(5)]
+    public GameObject confirmResetPanel;
+    public Button yesButton;
+    public Button noButton;*/
 
-    [Header("Toggles")]
-    private bool toggle;
-    public Toggle loadToggle;
+    private void Start()
+    {
 
+        /*if (SceneManager.GetActiveScene().name == "MainMenu")
+        {
+            CheckForSave();
+        }*/
+    }
 
-    public void ControlPanel()
+    /*private void CheckForSave()
+    {
+        bool hasSave = SaveSystem.HasSave();
+
+        if (continueButton != null)
+        {
+            continueButton.interactable = hasSave;
+            var text = continueButton.GetComponentInChildren<TextMeshProUGUI>();
+            if (text != null)
+            {
+                text.alpha = hasSave ? 1f : 0.4f;
+            }
+        }
+
+        if (newGameButton != null)
+            newGameButton.interactable = true;
+
+        Debug.Log(
+            hasSave ? "Save file found: Continue enabled." : "No save file:  Continue disabled."
+        );
+    }
+
+    public void ContinueGame()
+    {
+        if (SaveSystem.HasSave())
+        {
+            Debug.Log("Continuing saved game...");
+            SceneManager.LoadScene("Level_Scene");
+        }
+        else
+        {
+            Debug.Log("No save found: starting a new game instead.");
+        }
+    }
+
+    public void AskForResetConfirmation()
+    {
+        if (SaveSystem.HasSave())
+        {
+            if (confirmResetPanel != null)
+                confirmResetPanel.SetActive(true);
+
+            Time.timeScale = 0f;
+        }
+        else
+        {
+            Debug.Log("No save file found, starting a new game immediately.");
+            NewGame();
+        }
+    }
+
+    public void NewGame()
+    {
+        Debug.Log("Starting new game...");
+        SaveSystem.ResetSave();
+        SceneManager.LoadScene("Tutorial Level");
+    }
+
+    public void ConfirmResetYes()
+    {
+        Time.timeScale = 1f;
+        confirmResetPanel.SetActive(false);
+        SaveSystem.ResetSave();
+        SceneManager.LoadScene("Tutorial Level");
+    }
+
+    public void ConfirmResetNo()
+    {
+        Time.timeScale = 1f;
+        confirmResetPanel.SetActive(false);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            attackUIPanel.SetActive(!attackUIPanel.activeSelf);
+        }
+    }*/
+
+    public void SettingsPanel()
     {
         toggle = !toggle;
 
         if (!toggle)
         {
+            settingsPanel.SetActive(false);
             animator.SetBool("Controls", false);
-            controlUIPanel.SetActive(false);
-
-            foreach (TextMeshProUGUI txt in buttonTxt)
-            {
-                txt.color = highlightText.originalColor;
-            }
 
             if (hasMenuElements)
             {
                 foreach (GameObject elem in menuUIElements)
                 {
                     elem.SetActive(true);
-
-                }
-            }
-
-        }
-
-        if (toggle)
-        {
-            controlUIPanel.SetActive(true);
-            animator.SetBool("Controls", true);
-
-            foreach (GameObject elem in menuUIElements)
-            {
-                elem.SetActive(false);
-            }
-
-        }
-    }
-
-    public void AudioPanel()
-    {
-        toggle = !toggle;
-
-        if (!toggle)
-        {
-            animator.SetBool("Controls", false);
-            audioUIPanel.SetActive(false);
-
-            foreach (TextMeshProUGUI txt in buttonTxt)
-            {
-                txt.color = highlightText.originalColor;
-            }
-
-            if (hasMenuElements)
-            {
-                foreach (GameObject elem in menuUIElements)
-                {
-                    elem.SetActive(true);
-
                 }
             }
         }
 
         if (toggle)
         {
-            audioUIPanel.SetActive(true);
+            settingsPanel.SetActive(true);
             animator.SetBool("Controls", true);
             foreach (GameObject elem in menuUIElements)
             {
@@ -109,6 +151,7 @@ public class ManageUI : MonoBehaviour
             }
         }
     }
+
     /*
     public void GameSaved()
     {
@@ -142,18 +185,4 @@ public class ManageUI : MonoBehaviour
         Time.timeScale = 1;
         SceneManager.LoadScene(levelIndex);
     }
-
-    /*
-    public void TutorialLevelToggle()
-    {
-        if (loadToggle.isOn)
-        {
-            level = tutorialLevel;
-        }
-        else
-        {
-            level = mainLevel;
-        }
-    }
-    */
 }
