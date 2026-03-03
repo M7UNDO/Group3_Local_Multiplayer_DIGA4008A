@@ -9,10 +9,6 @@ public class ToggleOnPlayerJoin : MonoBehaviour
     private void Awake()
     {
         playerInputManager = FindFirstObjectByType<PlayerInputManager>();
-        if(playerInputManager != null)
-        {
-            print("Player Input manager Found");
-        }
     }
 
     private void OnEnable()

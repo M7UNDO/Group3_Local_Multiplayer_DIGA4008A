@@ -23,6 +23,11 @@ public class StackManager : MonoBehaviour
     private bool unstackInProgress = false;
     public PlayerInputManager playerInputManager;
 
+    [Header("Timeout Settings")]
+    public float operationCooldown = 1.0f; // Time to wait between operations
+    private float lastOperationTime = -Mathf.Infinity;
+    private bool stackInProgress = false;
+
     [Header("Debug")]
     public bool stackActive = false;
 
@@ -63,7 +68,7 @@ public class StackManager : MonoBehaviour
 
     private void Update()
     {
-        if (activePlayers.Count < 2 || stackActive)
+        if (activePlayers.Count < 2 || stackActive || stackInProgress || unstackInProgress)
         {
             //UIManager.Instance.HideAllPrompts();
             return;
@@ -84,16 +89,23 @@ public class StackManager : MonoBehaviour
             activePlayers[0].playerObject.GetComponent<PlayerUI>().StackPromptDisplay(false);
             activePlayers[1].playerObject.GetComponent<PlayerUI>().StackPromptDisplay(false);
         }
-            
+
     }
 
-    
+
 
     public void AttemptStack(GameObject requestingPlayer, GameObject otherPlayer)
     {
-        if (stackActive)
+        // Check cooldown
+        if (Time.time - lastOperationTime < operationCooldown)
         {
-            Debug.Log("Already stacked!");
+            Debug.Log("Stack on cooldown");
+            return;
+        }
+
+        if (stackActive || stackInProgress || unstackInProgress)
+        {
+            Debug.Log("Already stacking/unstacking!");
             return;
         }
 
@@ -132,6 +144,9 @@ public class StackManager : MonoBehaviour
 
     private void PerformStack(PlayerStackInfo bottomPlayer, PlayerStackInfo topPlayer)
     {
+        stackInProgress = true;
+        lastOperationTime = Time.time;
+
         ThirdPersonController.SetMovement(false);
 
         Vector3 stackPosition = bottomPlayer.playerObject.transform.position;
@@ -142,6 +157,11 @@ public class StackManager : MonoBehaviour
         SetChildrenActive(topPlayer.playerObject, false);
 
         DisableComponents(bottomPlayer, topPlayer);
+
+        if (playerInputManager.splitScreen == true)
+        {
+            playerInputManager.splitScreen = false;
+        }
 
         currentStackedCharacter = Instantiate(stackedCharacterPrefab, stackPosition, Quaternion.identity);
         StackedController.SetMovement(false);
@@ -163,6 +183,7 @@ public class StackManager : MonoBehaviour
         StartCoroutine(EnableStackedPlayersAfterVFX());
 
         stackActive = true;
+        stackInProgress = false;
 
         //Debug.Log("Stack formed successfully!");
     }
@@ -178,7 +199,7 @@ public class StackManager : MonoBehaviour
 
     private IEnumerator PlaySmokeThenShowMeshes(GameObject obj, string particleName)
     {
-        Debug.Log("PlayerCheck: "+ obj);
+        Debug.Log("PlayerCheck: " + obj);
         if (obj == null) yield break;
 
         ParticleSystem[] particles = null;
@@ -210,7 +231,7 @@ public class StackManager : MonoBehaviour
 
             ps.Play();
 
-            
+
         }
 
         // Wait until the trigger particle has started playing
@@ -264,17 +285,15 @@ public class StackManager : MonoBehaviour
     {
         playerInputManager.splitScreen = false;
 
-       bottomPlayer.playerObject.GetComponent<CharacterController>().enabled = false;
-       bottomPlayer.playerObject.GetComponent<ThirdPersonController>().enabled = false;
+        bottomPlayer.playerObject.GetComponent<CharacterController>().enabled = false;
+        bottomPlayer.playerObject.GetComponent<ThirdPersonController>().enabled = false;
 
-       topPlayer.playerObject.GetComponent<CharacterController>().enabled = false;
-       topPlayer.playerObject.GetComponent<ThirdPersonController>().enabled = false;
+        topPlayer.playerObject.GetComponent<CharacterController>().enabled = false;
+        topPlayer.playerObject.GetComponent<ThirdPersonController>().enabled = false;
     }
 
     public void EnableComponents(PlayerStackInfo bottomPlayer, PlayerStackInfo topPlayer)
     {
-        playerInputManager.splitScreen = true;
-
         bottomPlayer.playerObject.GetComponent<CharacterController>().enabled = true;
         bottomPlayer.playerObject.GetComponent<ThirdPersonController>().enabled = true;
 
@@ -285,20 +304,18 @@ public class StackManager : MonoBehaviour
 
     public void Unstack()
     {
-
-        if (!stackActive || unstackInProgress)
-            return;
-
-        unstackInProgress = true;
-
-        if (currentStackedCharacter == null)
+        if (Time.time - lastOperationTime < operationCooldown)
         {
-            stackActive = false;
-            unstackInProgress = false;
+            Debug.Log("Unstack on cooldown");
             return;
         }
 
-        // Safe check for destroyed object
+        if (!stackActive || unstackInProgress || stackInProgress)
+            return;
+
+        unstackInProgress = true;
+        lastOperationTime = Time.time;
+
         if (currentStackedCharacter == null)
         {
             stackActive = false;
@@ -313,6 +330,8 @@ public class StackManager : MonoBehaviour
         Vector3 bottomPos = basePos + Vector3.left * separation;
 
         Vector3 topPos = basePos + Vector3.right * separation;
+
+        playerInputManager.splitScreen = true;
 
         if (stackedBottomPlayer.playerObject != null)
         {
@@ -331,11 +350,7 @@ public class StackManager : MonoBehaviour
         }
 
         StartCoroutine(EnablePlayersAfterVFX());
-
-        EnableComponents(activePlayers[0], activePlayers[1]);
-
-        if (currentStackedCharacter != null)
-            Destroy(currentStackedCharacter);
+        Destroy(currentStackedCharacter);
 
         currentStackedCharacter = null;
         stackActive = false;

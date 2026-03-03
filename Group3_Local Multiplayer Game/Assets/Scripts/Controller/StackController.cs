@@ -369,17 +369,32 @@ public class StackedController : MonoBehaviour
             if (_jumpInput && _jumpTimeoutDelta <= 0.0f)
             {
                 _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
-                _animator.SetBool(_animIDJump, true);
+
+                if (_hasAnimator)
+                {
+                    _animator.SetBool(_animIDJump, true);
+                }
+                
             }
             else
             {
-                _animator.SetBool(_animIDJump, false);
+                if (_hasAnimator)
+                {
+                    _animator.SetBool(_animIDJump, false);
+                }
+                
             }
 
             if (_jumpTimeoutDelta >= 0.0f)
                 _jumpTimeoutDelta -= Time.deltaTime;
 
-            _animator.SetBool(_animIDFreeFall, false);
+            
+            if (_hasAnimator)
+            {
+                _animator.SetBool(_animIDFreeFall, false);
+            }
+
+
         }
         else
         {
@@ -391,10 +406,18 @@ public class StackedController : MonoBehaviour
             }
             else
             {
-                _animator.SetBool(_animIDFreeFall, true);
+                if (_hasAnimator)
+                {
+                    _animator.SetBool(_animIDFreeFall, true);
+                }
+                
             }
 
-            _animator.SetBool(_animIDJump, false);
+            if (_hasAnimator)
+            {
+                _animator.SetBool(_animIDJump, false);
+            }
+            
         }
 
         if (_verticalVelocity < _terminalVelocity)
