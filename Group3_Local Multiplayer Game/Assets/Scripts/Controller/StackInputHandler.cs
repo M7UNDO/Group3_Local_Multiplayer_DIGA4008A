@@ -9,6 +9,7 @@ public class StackedInputHandler : MonoBehaviour
     public bool jump;
     public bool sprint;
     public bool interact;
+    public bool grab;
 
     [Header("Mouse Cursor Settings")]
     public bool cursorLocked = true;
@@ -42,6 +43,10 @@ public class StackedInputHandler : MonoBehaviour
     public void SetJumpInput(bool jumpState)
     {
         jump = jumpState;
+    }
+    public void SetGrabInput(bool grabState)
+    {
+        grab = grabState;
     }
 
     public void SetSprintInput(bool sprintState)

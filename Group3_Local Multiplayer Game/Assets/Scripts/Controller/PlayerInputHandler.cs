@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -9,6 +10,8 @@ public class PlayerInputHandler : MonoBehaviour
     public bool jump;
     public bool sprint;
     public bool stack;
+    public bool grab;
+    public Vector2 balance;
 
     [Header("Movement Settings")]
     public bool analogMovement;
@@ -26,6 +29,8 @@ public class PlayerInputHandler : MonoBehaviour
     private InputAction jumpAction;
     private InputAction sprintAction;
     private InputAction stackAction;
+    private InputAction grabAction;
+    private InputAction balanceAction;
 
 
     private void Awake()
@@ -39,9 +44,11 @@ public class PlayerInputHandler : MonoBehaviour
 
             moveAction = playerMap.FindAction("Move");
             lookAction = playerMap.FindAction("Look");
+            balanceAction = playerMap.FindAction("Balance");
             jumpAction = playerMap.FindAction("Jump");
             sprintAction = playerMap.FindAction("Sprint");
             stackAction = playerMap.FindAction("Stack");
+            grabAction = playerMap.FindAction("Grab");
         }
     }
 
@@ -56,8 +63,14 @@ public class PlayerInputHandler : MonoBehaviour
         lookAction.performed += OnLookPerformed;
         lookAction.canceled += OnLookPerformed;
 
+        balanceAction.performed += OnBalancePerformed; // NEW
+        balanceAction.canceled += OnBalancePerformed;
+
         jumpAction.performed += OnJumpPerformed;
         jumpAction.canceled += OnJumpCanceled;
+
+        grabAction.performed += OnGrabPerformed;
+        grabAction.canceled += OnGrabCanceled;
 
         sprintAction.performed += OnSprintPerformed;
         sprintAction.canceled += OnSprintCanceled;
@@ -67,6 +80,7 @@ public class PlayerInputHandler : MonoBehaviour
         playerMap.Enable();
     }
 
+    
 
     private void OnDisable()
     {
@@ -78,15 +92,32 @@ public class PlayerInputHandler : MonoBehaviour
         lookAction.performed -= OnLookPerformed;
         lookAction.canceled -= OnLookPerformed;
 
+        balanceAction.performed -= OnBalancePerformed; // NEW
+        balanceAction.canceled -= OnBalancePerformed;
+
         jumpAction.performed -= OnJumpPerformed;
         jumpAction.canceled -= OnJumpCanceled;
 
         sprintAction.performed -= OnSprintPerformed;
         sprintAction.canceled -= OnSprintCanceled;
 
+        grabAction.performed -= OnGrabPerformed;
+        grabAction.canceled -= OnGrabCanceled;
+
         stackAction.performed -= OnStackPerformed;
 
         playerMap.Disable();
+    }
+
+    private void OnBalancePerformed(InputAction.CallbackContext ctx)
+    {
+        BalanceInput(ctx.ReadValue<Vector2>());
+    }
+
+    // NEW: Balance input method
+    public void BalanceInput(Vector2 newBalanceState)
+    {
+        balance = newBalanceState;
     }
 
     private void OnMovePerformed(InputAction.CallbackContext ctx)
@@ -108,6 +139,16 @@ public class PlayerInputHandler : MonoBehaviour
     private void OnJumpCanceled(InputAction.CallbackContext ctx)
     {
         JumpInput(false);
+    }
+
+    private void OnGrabCanceled(InputAction.CallbackContext ctx)
+    {
+        GrabInput(false);
+    }
+
+    private void OnGrabPerformed(InputAction.CallbackContext ctx)
+    {
+        GrabInput(true);
     }
 
     private void OnSprintPerformed(InputAction.CallbackContext ctx)
@@ -142,6 +183,10 @@ public class PlayerInputHandler : MonoBehaviour
     {
         JumpInput(value.isPressed);
     }
+    public void OnGrab(InputValue value)
+    {
+        GrabInput(value.isPressed);
+    }
 
     public void OnSprint(InputValue value)
     {
@@ -161,6 +206,10 @@ public class PlayerInputHandler : MonoBehaviour
     public void JumpInput(bool newJumpState)
     {
         jump = newJumpState;
+    }
+    public void GrabInput(bool newGrabState)
+    {
+        grab = newGrabState;
     }
 
     public void SprintInput(bool newSprintState)

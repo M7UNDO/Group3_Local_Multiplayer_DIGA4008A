@@ -76,16 +76,42 @@ public class StackedController : MonoBehaviour
     private Vector2 _lookInput;
     private bool _jumpInput;
     private bool _sprintInput;
+    private bool _grabInput;
 
     // Player references for input sources
-    private StackManager.PlayerStackInfo _bottomPlayer;
-    private StackManager.PlayerStackInfo _topPlayer;
+    public StackManager.PlayerStackInfo _bottomPlayer;
+    public StackManager.PlayerStackInfo _topPlayer;
 
     private const float _threshold = 0.01f;
 
     // Track device types
     private bool _bottomUsingMouse;
     private bool _topUsingMouse;
+
+    public Vector2 GetTopPlayerBalanceInput()
+    {
+        if (_topPlayer?.inputHandler != null)
+        {
+            return _topPlayer.inputHandler.balance;
+        }
+        return Vector2.zero;
+    }
+
+    public bool GetGrabInput()
+    {
+        return _grabInput;
+    }
+
+    public Vector3 GetCurrentVelocity()
+    {
+        return _controller.velocity;
+    }
+
+    // Add this to expose movement direction
+    public Vector3 GetMovementDirection()
+    {
+        return _moveInput;
+    }
 
     private void Awake()
     {
@@ -177,6 +203,12 @@ public class StackedController : MonoBehaviour
             }
         }
 
+        SpineBalanceController spineBalance = GetComponent<SpineBalanceController>();
+        if (spineBalance != null)
+        {
+            spineBalance.SetPlayers(bottom, top);
+        }
+
         //Debug.Log($"StackedController initialized: Bottom Player {bottom?.playerIndex} (Using Mouse: {_bottomUsingMouse}), Top Player {top?.playerIndex} (Using Mouse: {_topUsingMouse})");
     }
 
@@ -206,6 +238,7 @@ public class StackedController : MonoBehaviour
         _lookInput = Vector2.zero;
         _jumpInput = false;
         _sprintInput = false;
+        _grabInput = false;
 
 
         // BOTTOM PLAYER INPUT
@@ -253,6 +286,8 @@ public class StackedController : MonoBehaviour
                 topLook = Vector2.zero;
             else
                 topLook = rawLook;
+
+            _grabInput = _topPlayer.inputHandler.grab;
 
             // Device change detection
             if (_topPlayer.playerInput != null)

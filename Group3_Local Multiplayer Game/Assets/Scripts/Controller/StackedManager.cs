@@ -170,6 +170,13 @@ public class StackManager : MonoBehaviour
         stackedInputHandler = currentStackedCharacter.GetComponent<StackedInputHandler>();
         stackedController.Initialize(bottomPlayer, topPlayer);
 
+        // Initialize spine balance controller
+        SpineBalanceController spineBalance = currentStackedCharacter.GetComponent<SpineBalanceController>();
+        if (spineBalance != null)
+        {
+            spineBalance.SetPlayers(bottomPlayer, topPlayer);
+        }
+
         stackedBottomPlayer = bottomPlayer;
         stackedTopPlayer = topPlayer;
         stackedBottomPlayer.isTop = false;
