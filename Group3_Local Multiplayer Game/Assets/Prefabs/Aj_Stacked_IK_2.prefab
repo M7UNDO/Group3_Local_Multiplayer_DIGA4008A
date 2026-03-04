@@ -334,7 +334,6 @@ GameObject:
   - component: {fileID: 6127767829232748110}
   - component: {fileID: 1851169706139775658}
   - component: {fileID: 6789586922886700002}
-  - component: {fileID: 3873254095158095508}
   - component: {fileID: 2197065249903006707}
   - component: {fileID: 8765037100302165603}
   - component: {fileID: 4933552278937563550}
@@ -480,40 +479,36 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpineBalanceController
   balanceRig: {fileID: 8920746920176257075}
   spineConstraint: {fileID: 6823809947381035031}
-  maxTiltAngle: 30
-  tiltSpeed: 5
-  balanceStrength: 20
+  maxTiltAngle: 90
+  criticalTiltAngle: 30
+  balanceStrength: 40
   inputSensitivity: 0.02
-  forwardTiltMultiplier: 2
+  forwardTiltMultiplier: 12
+  backwardTiltMultiplier: 12
   strafeTiltMultiplier: 1.5
-  speedMultiplier: 1
+  momentumTiltMultiplier: 10
+  decelerationTiltMultiplier: 5
+  inertiaSmoothTime: 0.3
+  tiltSmoothTime: 0.15
+  inputSmoothTime: 0.1
+  unstackDelay: 2.5
+  warningTime: 1.5
+  unstackOnFail: 1
   currentTilt: 0
-  currentBalanceInput: {x: 0, y: 0}
-  movementTilt: 0
   targetTilt: 0
-  currentVelocity: {x: 0, y: 0, z: 0}
-  hasInput: 0
---- !u!114 &3873254095158095508
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 995853267339866125}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1c824546042c6d64aabe7a6a1afe7744, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StackedBalanceController
-  spineBone: {fileID: 8636247183009654098}
-  chestBone: {fileID: 0}
-  maxTiltAngle: 30
-  tiltSpeed: 5
-  balanceStrength: 20
-  forwardTiltMultiplier: 2
-  strafeTiltMultiplier: 1.5
-  currentTilt: 0
   currentBalanceInput: {x: 0, y: 0}
+  smoothBalanceInput: {x: 0, y: 0}
+  currentVelocity: {x: 0, y: 0, z: 0}
+  previousVelocity: {x: 0, y: 0, z: 0}
+  acceleration: {x: 0, y: 0, z: 0}
+  moveInput: {x: 0, y: 0}
+  movementTilt: 0
+  momentumTilt: 0
+  balanceCorrection: 0
+  isInCriticalZone: 0
+  timeInCriticalZone: 0
+  unstackTimer: 0
+  isUnstacking: 0
 --- !u!114 &2197065249903006707
 MonoBehaviour:
   m_ObjectHideFlags: 0

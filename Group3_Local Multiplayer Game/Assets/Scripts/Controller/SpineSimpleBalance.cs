@@ -1,10 +1,10 @@
-using UnityEngine;
+/*using UnityEngine;
 
 public class SimpleSpineBalance : MonoBehaviour
 {
     [Header("Spine Bones")]
-    public Transform spineBone;        // Assign your character's spine bone
-    public Transform chestBone;         // Optional: for more dramatic effect
+    public Transform spineBone;      
+    public Transform chestBone;        
 
     [Header("Balance Settings")]
     public float maxTiltAngle = 30f;
@@ -128,18 +128,18 @@ public class SimpleSpineBalance : MonoBehaviour
         // X axis = forward/back tilt
         // Z axis = side tilt from horizontal balance
         Quaternion tiltRotation = Quaternion.Euler(
-            currentTilt,                    // Forward/back tilt
-            0f,                              // No yaw
-            -currentBalanceInput.x * 10f     // Side tilt
+            currentTilt,          
+            0f,                              
+            -currentBalanceInput.x * 10f     
         );
 
-        // Apply to spine
+
         spineBone.localRotation = _originalSpineRotation * tiltRotation;
 
-        // If chest bone exists, apply additional rotation for more dramatic effect
+
         if (chestBone != null)
         {
-            // Chest follows spine but with multiplier for more natural look
+
             Quaternion chestTilt = Quaternion.Euler(
                 currentTilt * 0.7f,
                 0f,
@@ -154,13 +154,13 @@ public class SimpleSpineBalance : MonoBehaviour
         _topPlayer = top;
     }
 
-    // For debugging - draw a GUI to see values
+
     private void OnGUI()
     {
-        // Simple debug display - remove in production
+
         GUI.Label(new Rect(10, 10, 300, 20), $"Balance Input: {currentBalanceInput}");
         GUI.Label(new Rect(10, 30, 300, 20), $"Current Tilt: {currentTilt:F2}°");
         GUI.Label(new Rect(10, 50, 300, 20), $"Target Tilt: {_targetTilt:F2}°");
         GUI.Label(new Rect(10, 70, 300, 20), $"Velocity: {_velocity}");
     }
-}
+}*/

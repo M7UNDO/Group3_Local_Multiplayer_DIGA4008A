@@ -4,136 +4,155 @@ using UnityEngine.Animations.Rigging;
 public class SpineBalanceController : MonoBehaviour
 {
     [Header("Rig References")]
-    public Rig balanceRig;              // Main rig
-    public MultiRotationConstraint spineConstraint; // Constraint on spine
+    public Rig balanceRig;
+    public MultiRotationConstraint spineConstraint;
 
     [Header("Spine Settings")]
-    public float maxTiltAngle = 30f;
-
-    [Header("Smoothing Settings")]
-    public float tiltSmoothTime = 0.15f;      // How quickly tilt changes
-    public float inputSmoothTime = 0.1f;       // How quickly input is smoothed
-    public float returnToCenterSpeed = 3f;     // How fast it returns when no input
-    public float anticipationSpeed = 2f;       // Slight lean before movement starts
+    public float maxTiltAngle = 40f;
+    public float criticalTiltAngle = 30f;
 
     [Header("Balance Response")]
-    public float balanceStrength = 25f;
+    public float balanceStrength = 30f;
     public float inputSensitivity = 0.02f;
 
     [Header("Movement Impact")]
-    public AnimationCurve tiltBySpeed = AnimationCurve.EaseInOut(0, 0, 10, 30); // Speed to tilt mapping
-    public float forwardTiltMultiplier = 3f;
+    [Tooltip("Tilt from forward movement")]
+    public float forwardTiltMultiplier = 4f;
+    [Tooltip("Tilt from backward movement")] public float backwardTiltMultiplier = 3f;   
     public float strafeTiltMultiplier = 2f;
 
-    [Header("Natural Movement")]
-    public float overshootAmount = 0.2f;        // Adds a slight overshoot for natural feel
-    public float wobbleAmount = 0.5f;           // Small natural wobble
-    public float wobbleSpeed = 2f;               // Speed of natural wobble
+    [Header("Momentum & Inertia")]
+    [Tooltip("How much momentum affects tilt")]
+    public float momentumTiltMultiplier = 2f;
+    [Tooltip("Tilt when stopping suddenly")]
+    public float decelerationTiltMultiplier = 3f; 
+    [Tooltip("How smoothly momentum builds/fades")]
+    public float inertiaSmoothTime = 0.3f;
+
+    [Header("Smoothing")]
+    public float tiltSmoothTime = 0.15f;
+    public float inputSmoothTime = 0.1f;
+
+    [Header("Fail State")]
+    public float unstackDelay = 2.5f;
+    public float warningTime = 1.5f;
+    public bool unstackOnFail = true;
 
     [Header("Current State - Debug")]
     [SerializeField] private float currentTilt = 0f;
+    [SerializeField] private float targetTilt = 0f;
     [SerializeField] private Vector2 currentBalanceInput = Vector2.zero;
     [SerializeField] private Vector2 smoothBalanceInput = Vector2.zero;
-    [SerializeField] private float movementTilt = 0f;
-    [SerializeField] private float targetTilt = 0f;
     [SerializeField] private Vector3 currentVelocity = Vector3.zero;
-    [SerializeField] private bool hasInput = false;
+    [SerializeField] private Vector3 previousVelocity = Vector3.zero;
+    [SerializeField] private Vector3 acceleration = Vector3.zero;
+    [SerializeField] private Vector2 moveInput = Vector2.zero;
+    [SerializeField] private float movementTilt = 0f;
+    [SerializeField] private float momentumTilt = 0f;
+    [SerializeField] private float balanceCorrection = 0f;
 
-    // Component references
+    [Header("Fail State - Debug")]
+    [SerializeField] private bool isInCriticalZone = false;
+    [SerializeField] private float timeInCriticalZone = 0f;
+    [SerializeField] private float unstackTimer = 0f;
+    [SerializeField] private bool isUnstacking = false;
+
+
     private StackedController _stackedController;
     private CharacterController _controller;
     private Vector3 _lastPosition;
     private StackManager.PlayerStackInfo _topPlayer;
+    private StackManager _stackManager;
 
-    // For smooth damping
+
     private float _tiltVelocity;
+    private float _momentumTiltVelocity;
     private Vector2 _inputVelocity;
-    private float _lastMovementTilt;
-    private float _overshootVelocity;
-    private float _currentOvershoot;
 
-    // For natural wobble
-    private float _wobblePhase;
-
-    // Store the original offset
-    private Vector3 _originalOffset;
+    // Events
+    public System.Action<float> OnBalanceChanged;
+    public System.Action OnEnterCriticalZone;
+    public System.Action OnExitCriticalZone;
+    public System.Action OnUnstackStarted;
 
     private void Start()
     {
         _stackedController = GetComponent<StackedController>();
         _controller = GetComponent<CharacterController>();
+        _stackManager = StackManager.Instance;
         _lastPosition = transform.position;
-        _wobblePhase = Random.Range(0f, Mathf.PI * 2f); // Random start phase
 
-        // Store original offset if constraint exists
-        if (spineConstraint != null)
+        if (spineConstraint == null)
         {
-            _originalOffset = spineConstraint.data.offset;
-            Debug.Log($"Spine constraint found: {spineConstraint.name}");
-        }
-        else
-        {
-            Debug.LogError("Spine constraint not assigned! Please assign the MultiRotationConstraint for the spine.");
+            Debug.LogError("Spine constraint not assigned!");
         }
 
-        // Initialize rig if present
         if (balanceRig != null)
         {
             balanceRig.weight = 1f;
-            Debug.Log("Balance rig initialized with weight 1");
         }
     }
 
     private void Update()
     {
         if (PauseScript.IsGamePaused) return;
-        if (!StackedController.canMove) return;
+        if (!StackedController.canMove || isUnstacking) return;
 
         CalculateVelocity();
-        GetBalanceInput();
+        CalculateAcceleration();
+        GetInputs();
         CalculateTargetTilt();
-        CalculateNaturalWobble();
+        CheckBalanceState();
     }
 
     private void LateUpdate()
     {
-        // Apply rotation in LateUpdate to override animation
+        if (isUnstacking) return;
         ApplySpineRotation();
     }
 
     private void CalculateVelocity()
     {
+        previousVelocity = currentVelocity;
+
         if (_controller != null && _controller.enabled)
         {
             currentVelocity = _controller.velocity;
         }
         else
         {
-            // Fallback if controller is disabled
             Vector3 currentPosition = transform.position;
             currentVelocity = (currentPosition - _lastPosition) / Time.deltaTime;
             _lastPosition = currentPosition;
         }
     }
 
-    private void GetBalanceInput()
+    private void CalculateAcceleration()
     {
+        // Calculate how quickly we're speeding up or slowing down
+        acceleration = (currentVelocity - previousVelocity) / Time.deltaTime;
+    }
+
+    private void GetInputs()
+    {
+        // Get moveInput from StackedController
+        if (_stackedController != null)
+        {
+            moveInput = _stackedController.GetMovementDirection();
+        }
+
+        // Get top player's balance input
         if (_topPlayer?.inputHandler != null)
         {
             Vector2 rawBalance = _topPlayer.inputHandler.balance;
 
-            // Check if we're getting input (using a small threshold)
             if (rawBalance.magnitude > 0.01f)
             {
-                hasInput = true;
-
-                // Apply sensitivity and clamp to -1..1 range
                 Vector2 processedInput = new Vector2(
                     Mathf.Clamp(rawBalance.x * inputSensitivity, -1f, 1f),
                     Mathf.Clamp(rawBalance.y * inputSensitivity, -1f, 1f)
                 );
 
-                // Smooth the input using damped spring
                 smoothBalanceInput = Vector2.SmoothDamp(
                     smoothBalanceInput,
                     processedInput,
@@ -145,9 +164,7 @@ public class SpineBalanceController : MonoBehaviour
             }
             else
             {
-                hasInput = false;
-                // Gradually return to zero when no input
-                smoothBalanceInput = Vector2.Lerp(smoothBalanceInput, Vector2.zero, Time.deltaTime * returnToCenterSpeed);
+                smoothBalanceInput = Vector2.Lerp(smoothBalanceInput, Vector2.zero, Time.deltaTime * 3f);
                 currentBalanceInput = smoothBalanceInput;
             }
         }
@@ -155,114 +172,201 @@ public class SpineBalanceController : MonoBehaviour
 
     private void CalculateTargetTilt()
     {
-        // Convert velocity to local space
+        // Convert velocities to local space
         Vector3 localVelocity = transform.InverseTransformDirection(currentVelocity);
-        float speed = currentVelocity.magnitude;
+        Vector3 localAcceleration = transform.InverseTransformDirection(acceleration);
 
-        // Use animation curve for more natural speed-to-tilt mapping
-        float speedTiltFactor = tiltBySpeed.Evaluate(speed) / 30f; // Normalize to our max
+        //(immediate response to controls)
+        float inputTilt = 0f;
 
-        // MOVEMENT IMPACT with anticipation
-        float targetMovementTilt = -localVelocity.z * forwardTiltMultiplier * speedTiltFactor;
-        targetMovementTilt += Mathf.Abs(localVelocity.x) * strafeTiltMultiplier * 0.3f * Mathf.Sign(localVelocity.x) * speedTiltFactor;
-
-        // Add anticipation - slight lean before movement starts
-        if (speed < 0.5f && _stackedController != null)
+        if (Mathf.Abs(moveInput.y) > 0.1f)
         {
-            Vector3 inputDir = _stackedController.GetMovementDirection();
-            if (inputDir.magnitude > 0.1f)
+            if (moveInput.y > 0) // Moving forward
             {
-                // Lean slightly in the direction of input before moving
-                float anticipation = inputDir.y * anticipationSpeed * Time.deltaTime;
-                targetMovementTilt = Mathf.Lerp(targetMovementTilt, -inputDir.y * 5f, anticipation);
+                inputTilt += -moveInput.y * forwardTiltMultiplier;
+            }
+            else // Moving backward
+            {
+                inputTilt += -moveInput.y * backwardTiltMultiplier;
             }
         }
 
-        // Smooth the movement tilt
-        movementTilt = Mathf.Lerp(movementTilt, targetMovementTilt, Time.deltaTime * 5f);
+        // Strafe movement
+        inputTilt += Mathf.Abs(moveInput.x) * strafeTiltMultiplier * 0.5f * Mathf.Sign(moveInput.x);
 
-        // BALANCE CORRECTION with easing
-        float balanceCorrection = currentBalanceInput.y * balanceStrength;
 
-        // Calculate target tilt
+        float momentumFromVelocity = -localVelocity.z * momentumTiltMultiplier;
+
+        float accelerationTilt = 0f;
+
+ 
+        if (localAcceleration.z > 0.1f)
+        {
+            accelerationTilt += -localAcceleration.z * decelerationTiltMultiplier * 0.5f;
+        }
+
+        else if (localAcceleration.z < -0.1f)
+        {
+            accelerationTilt += -localAcceleration.z * decelerationTiltMultiplier; 
+            Debug.Log($"Decelerating! Lean forward: {accelerationTilt}");
+        }
+
+
+        if (Mathf.Abs(previousVelocity.z) > 2f && Mathf.Abs(currentVelocity.z) < 0.5f)
+        {
+            // Sudden stop - lurch forward
+            accelerationTilt += 5f;
+            Debug.Log("Sudden stop! Lurching forward!");
+        }
+
+        float totalMovementTilt = inputTilt + momentumFromVelocity + accelerationTilt;
+
+    
+        movementTilt = Mathf.Lerp(movementTilt, totalMovementTilt, Time.deltaTime * 5f);
+        movementTilt = Mathf.Clamp(movementTilt, -maxTiltAngle, maxTiltAngle);
+
+        
+        balanceCorrection = currentBalanceInput.y * balanceStrength;
+
+        // Calculate raw target
         float rawTargetTilt = movementTilt - balanceCorrection;
         rawTargetTilt = Mathf.Clamp(rawTargetTilt, -maxTiltAngle, maxTiltAngle);
 
-        // Add slight overshoot for natural feel (like a real person balancing)
-        float overshootTarget = rawTargetTilt + (rawTargetTilt - _lastMovementTilt) * overshootAmount;
-        _lastMovementTilt = rawTargetTilt;
+        // Smooth the target
+        targetTilt = Mathf.SmoothDamp(targetTilt, rawTargetTilt, ref _tiltVelocity, tiltSmoothTime);
 
-        // Smooth the target with damped spring (more natural than linear interpolation)
-        targetTilt = Mathf.SmoothDamp(targetTilt, overshootTarget, ref _tiltVelocity, tiltSmoothTime);
+        currentTilt = Mathf.Lerp(currentTilt, targetTilt, Time.deltaTime * 10f);
 
-        // Clamp final target
-        targetTilt = Mathf.Clamp(targetTilt, -maxTiltAngle, maxTiltAngle);
+  
+        OnBalanceChanged?.Invoke(GetBalancePercentage());
 
-        // Smooth current tilt (extra layer of smoothing)
-        currentTilt = Mathf.Lerp(currentTilt, targetTilt, Time.deltaTime * 8f);
+ 
+        if (Mathf.Abs(accelerationTilt) > 1f || Mathf.Abs(momentumFromVelocity) > 1f)
+        {
+            Debug.Log($"Tilt Sources - Input: {inputTilt:F1}, Momentum: {momentumFromVelocity:F1}, Acceleration: {accelerationTilt:F1}, Total: {totalMovementTilt:F1}");
+        }
     }
 
-    private void CalculateNaturalWobble()
+    private void CheckBalanceState()
     {
-        // Add a tiny natural wobble when balancing (like a real person)
-        _wobblePhase += Time.deltaTime * wobbleSpeed;
+        float tiltMagnitude = Mathf.Abs(currentTilt);
 
-        // Only wobble when actively balancing (has input or moving)
-        if (hasInput || currentVelocity.magnitude > 0.1f)
+        
+        bool wasInCriticalZone = isInCriticalZone;
+        isInCriticalZone = tiltMagnitude > criticalTiltAngle;
+
+        if (isInCriticalZone && !wasInCriticalZone)
         {
-            // Small amplitude wobble
-            float wobble = Mathf.Sin(_wobblePhase) * wobbleAmount * 0.1f;
-            currentTilt += wobble * Time.deltaTime;
+            EnterCriticalZone();
         }
+        else if (!isInCriticalZone && wasInCriticalZone)
+        {
+            ExitCriticalZone();
+        }
+
+        
+        if (isInCriticalZone)
+        {
+            timeInCriticalZone += Time.deltaTime;
+
+            if (timeInCriticalZone > warningTime && !isUnstacking)
+            {
+                unstackTimer += Time.deltaTime;
+
+                if (unstackTimer >= unstackDelay - warningTime)
+                {
+                    StartUnstack();
+                }
+            }
+        }
+        else
+        {
+            timeInCriticalZone = 0f;
+            unstackTimer = 0f;
+        }
+    }
+
+    private void EnterCriticalZone()
+    {
+        Debug.Log("ENTERING CRITICAL BALANCE ZONE!");
+        OnEnterCriticalZone?.Invoke();
+    }
+
+    private void ExitCriticalZone()
+    {
+        Debug.Log("EXITING CRITICAL BALANCE ZONE!");
+        OnExitCriticalZone?.Invoke();
+    }
+
+    private void StartUnstack()
+    {
+        if (isUnstacking || !unstackOnFail) return;
+
+        isUnstacking = true;
+        Debug.Log("Woahh Falling");
+
+        OnUnstackStarted?.Invoke();
+
+        if (_stackManager != null && _stackManager.stackActive)
+        {
+            StartCoroutine(UnstackAfterDelay(0.5f));
+        }
+    }
+
+    private System.Collections.IEnumerator UnstackAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (_stackManager != null)
+        {
+            _stackManager.Unstack();
+        }
+
+        isUnstacking = false;
     }
 
     private void ApplySpineRotation()
     {
         if (spineConstraint == null) return;
 
-        // Create a rotation offset with smooth interpolation
         Vector3 rotationOffset = new Vector3(
-            currentTilt,                    // Forward/back tilt
-            0f,                              // No yaw (twist)
-            -currentBalanceInput.x * 12f     // Side tilt from horizontal balance
+            currentTilt,
+            0f,
+            -currentBalanceInput.x * 12f
         );
 
-        // Add subtle secondary motion
-        if (Mathf.Abs(currentTilt) > maxTiltAngle * 0.3f)
+        // Add wobble when in critical zone
+        if (isInCriticalZone)
         {
-            // Add a little extra wobble when near the limit (struggling to balance)
-            float struggleWobble = Mathf.Sin(Time.time * 15f) * (Mathf.Abs(currentTilt) / maxTiltAngle) * 2f;
-            rotationOffset.z += struggleWobble;
-            rotationOffset.x += struggleWobble * 0.3f;
+            float struggleIntensity = (timeInCriticalZone / warningTime) * 3f;
+            float wobble = Mathf.Sin(Time.time * 20f) * struggleIntensity;
+            rotationOffset.z += wobble;
+            rotationOffset.x += wobble * 0.3f;
         }
 
-        // Smoothly interpolate the offset for extra smoothness
         Vector3 currentOffset = spineConstraint.data.offset;
-        Vector3 newOffset = Vector3.Lerp(currentOffset, rotationOffset, Time.deltaTime * 10f);
-
-        // Apply to constraint
+        Vector3 newOffset = Vector3.Lerp(currentOffset, rotationOffset, Time.deltaTime * 15f);
         spineConstraint.data.offset = newOffset;
-
-        // Ensure the constraint is active
-        if (balanceRig != null && balanceRig.weight < 0.9f)
-        {
-            balanceRig.weight = Mathf.Lerp(balanceRig.weight, 1f, Time.deltaTime * 5f);
-        }
-
-        // Visual debug
-        if (spineConstraint.data.constrainedObject != null)
-        {
-            Transform spine = spineConstraint.data.constrainedObject;
-            Debug.DrawRay(spine.position, spine.forward * 2f, Color.blue);
-            Debug.DrawRay(spine.position, spine.up * 2f, Color.green);
-        }
     }
 
     public void SetPlayers(StackManager.PlayerStackInfo bottom, StackManager.PlayerStackInfo top)
     {
         _topPlayer = top;
-        Debug.Log($"SpineBalance: Top player set. Player has input handler: {top?.inputHandler != null}");
     }
 
+    public float GetBalancePercentage()
+    {
+        return 1f - (Mathf.Abs(currentTilt) / maxTiltAngle);
+    }
 
+    public float GetTimeUntilUnstack()
+    {
+        if (!isInCriticalZone) return unstackDelay;
+        return Mathf.Max(0, unstackDelay - (timeInCriticalZone + unstackTimer));
+    }
+
+    public bool IsInCriticalZone()
+    {
+        return isInCriticalZone;
+    }
 }
