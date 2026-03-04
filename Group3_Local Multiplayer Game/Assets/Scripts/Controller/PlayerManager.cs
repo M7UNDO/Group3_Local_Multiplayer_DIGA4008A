@@ -45,11 +45,14 @@ public class PlayerManager : MonoBehaviour
 
         Transform playerTransform = player.transform;
 
-        StartCoroutine(PlacePlayerNextFrame(player, spawnPoint));
+        if(players.Count <= 2)
+        {
+            StartCoroutine(PlacePlayerNextFrame(player, spawnPoint));
+        }
+        
 
 
         int channel = player.playerIndex;
-
     
         CinemachineCamera cineCam = playerTransform.GetComponentInChildren<CinemachineCamera>();
         if (cineCam != null)

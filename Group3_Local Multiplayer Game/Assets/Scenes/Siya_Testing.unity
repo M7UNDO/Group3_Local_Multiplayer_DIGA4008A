@@ -682,6 +682,7 @@ GameObject:
   - component: {fileID: 1702633852}
   - component: {fileID: 1702633851}
   - component: {fileID: 1702633850}
+  - component: {fileID: 1702633854}
   m_Layer: 0
   m_Name: Item
   m_TagString: Untagged
@@ -796,6 +797,24 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1702633848}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1702633854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1702633848}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 4
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1 &1717806730 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1455581798848196812, guid: c5d2fb041cf423b41b8e846abdbb7469, type: 3}
@@ -930,6 +949,10 @@ PrefabInstance:
       propertyPath: stackManager
       value: 
       objectReference: {fileID: 511082247}
+    - target: {fileID: 6650052285244055361, guid: 67af98f5aedc9b044b94e6504baa94df, type: 3}
+      propertyPath: playerInputManager
+      value: 
+      objectReference: {fileID: 1286030969}
     - target: {fileID: 7520466929703675361, guid: 67af98f5aedc9b044b94e6504baa94df, type: 3}
       propertyPath: m_Name
       value: PlayerInputManager
@@ -1035,6 +1058,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Temporary_Start_Canvas
       objectReference: {fileID: 0}
+    - target: {fileID: 7585839013906605540, guid: a70ee254463bdb94ba101f32d40e7130, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1110,13 +1137,17 @@ PrefabInstance:
       value: LevelManager
       objectReference: {fileID: 0}
     - target: {fileID: 2224599272326086350, guid: f750e5b570b9b0445be56e542e560a9d, type: 3}
+      propertyPath: stackHeightOffset
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2224599272326086350, guid: f750e5b570b9b0445be56e542e560a9d, type: 3}
       propertyPath: playerInputManager
       value: 
       objectReference: {fileID: 1286030969}
     - target: {fileID: 2224599272326086350, guid: f750e5b570b9b0445be56e542e560a9d, type: 3}
       propertyPath: stackedCharacterPrefab
       value: 
-      objectReference: {fileID: 995853267339866125, guid: e455b8a2c1f76674b8ace0f47af774b6, type: 3}
+      objectReference: {fileID: 1864714067573426342, guid: 5aaa2b8a21564f640bfd29fcbe18388e, type: 3}
     - target: {fileID: 3811586032697232216, guid: f750e5b570b9b0445be56e542e560a9d, type: 3}
       propertyPath: animator
       value: 

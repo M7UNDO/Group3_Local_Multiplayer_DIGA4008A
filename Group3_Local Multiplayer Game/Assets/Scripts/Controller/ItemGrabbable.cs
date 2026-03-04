@@ -37,7 +37,7 @@ public class ItemGrabbable : MonoBehaviour
 
     public void DestroySelf()
     {
-        // Play a pickup sound/effect here if desired
+
         Debug.Log($"Item {gameObject.name} picked up!");
 
         // Hide icon before destroying
@@ -47,7 +47,7 @@ public class ItemGrabbable : MonoBehaviour
         Destroy(gameObject);
     }
 
-    // Optional: Called when player leaves range
+
     private void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Player"))
