@@ -23,6 +23,11 @@ public class StackManager : MonoBehaviour
     private bool unstackInProgress = false;
     public PlayerInputManager playerInputManager;
 
+    [Header("Stack SFX")]
+
+    public AudioSource stackSFX;
+    public AudioSource unstackSFX;
+
     [Header("Timeout Settings")]
     public float operationCooldown = 1.0f; // Time to wait between operations
     private float lastOperationTime = -Mathf.Infinity;
@@ -163,7 +168,13 @@ public class StackManager : MonoBehaviour
             playerInputManager.splitScreen = false;
         }
 
+        
         currentStackedCharacter = Instantiate(stackedCharacterPrefab, stackPosition, Quaternion.identity);
+        if (stackSFX != null)
+        {
+            stackSFX.Play();
+            print("Stack sound played!");
+        }
         StackedController.SetMovement(false);
 
         stackedController = currentStackedCharacter.GetComponent<StackedController>();
@@ -339,6 +350,12 @@ public class StackManager : MonoBehaviour
         Vector3 topPos = basePos + Vector3.right * separation;
 
         playerInputManager.splitScreen = true;
+
+        if(unstackSFX != null)
+        {
+            unstackSFX.Play();
+            print("Unstack sound played!");
+        }
 
         if (stackedBottomPlayer.playerObject != null)
         {

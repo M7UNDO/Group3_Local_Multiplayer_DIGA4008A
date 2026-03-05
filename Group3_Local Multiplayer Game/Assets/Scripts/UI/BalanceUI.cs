@@ -59,7 +59,8 @@ public class BalanceUI : MonoBehaviour
             if(timerFill != null)
             {
                 timerFill.enabled = true;
-                timerFill.fillAmount = fillPercentage; ;
+                timerFill.fillAmount = fillPercentage;
+                //timerFill.color = Color.Lerp(safeColor, dangerColor, fillPercentage);
                 //.color
             }
             
