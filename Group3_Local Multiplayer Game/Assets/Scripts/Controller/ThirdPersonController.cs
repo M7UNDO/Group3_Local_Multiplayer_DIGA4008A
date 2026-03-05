@@ -118,11 +118,19 @@ public class ThirdPersonController : MonoBehaviour
         canMove = isAbleToMove;
     }
 
+    public void ResetPlayerMovement()
+    {
+        _input.move = Vector2.zero;
+        _animator.SetFloat(_animIDSpeed, 0f);
+    }
+
     private void Update()
     {
-        if (PauseScript.IsGamePaused) return;
-        
-        if(!canMove) return;
+        if (PauseScript.IsGamePaused || !canMove)
+        {
+            ResetPlayerMovement();
+            return;
+        }
 
         _hasAnimator = TryGetComponent(out _animator);
 

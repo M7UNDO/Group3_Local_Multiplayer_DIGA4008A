@@ -335,7 +335,6 @@ GameObject:
   - component: {fileID: 1851169706139775658}
   - component: {fileID: 6789586922886700002}
   - component: {fileID: 7274539081289962497}
-  - component: {fileID: 2197065249903006707}
   - component: {fileID: 8765037100302165603}
   - component: {fileID: 4933552278937563550}
   m_Layer: 6
@@ -487,9 +486,9 @@ MonoBehaviour:
   inputSensitivity: 0.02
   forwardTiltMultiplier: 12
   backwardTiltMultiplier: 12
-  strafeTiltMultiplier: 1.5
-  momentumTiltMultiplier: 10
-  decelerationTiltMultiplier: 5
+  strafeTiltMultiplier: 4
+  momentumTiltMultiplier: 15
+  decelerationTiltMultiplier: 10
   inertiaSmoothTime: 0.3
   tiltSmoothTime: 0.15
   inputSmoothTime: 0.1
@@ -531,19 +530,6 @@ MonoBehaviour:
   warningColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   dangerColor: {r: 1, g: 0, b: 0, a: 1}
   _balanceController: {fileID: 6789586922886700002}
---- !u!114 &2197065249903006707
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 995853267339866125}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1cc29ecbf456477468e501600c42d244, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerGrabItem
-  handIKTarget: {fileID: 0}
 --- !u!114 &8765037100302165603
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2150,7 +2136,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3699399962988641033}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0, z: -1.8914439e-36, w: 1}
+  m_LocalRotation: {x: 0.07510072, y: -0.007880071, z: 0.000076704055, w: 0.9971448}
   m_LocalPosition: {x: -6.4984827e-12, y: 0.09051071, z: 0.010340216}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -2286,7 +2272,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4167415321034532977}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.0103428345, y: -0.000000051638963, z: 0.00000074980494, w: 0.99994653}
+  m_LocalRotation: {x: 2.4731484e-15, y: 0.0000000024010582, z: 0.00000080131275, w: 1}
   m_LocalPosition: {x: -0.00000012816241, y: 0.07722015, z: 0.011662032}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -18721,6 +18707,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.Rig
   m_Weight: 1
   m_Effectors:
+  - m_Transform: {fileID: 0}
+    m_Style:
+      shape: {fileID: 4300000, guid: 687b70eb9c49243639f9379f6965034f, type: 2}
+      color: {r: 1, g: 0, b: 0, a: 0.5}
+      size: 0.1
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0}
+    m_Visible: 1
+  - m_Transform: {fileID: 0}
+    m_Style:
+      shape: {fileID: 4300000, guid: e050c2b16fe384bd994474655a4b4968, type: 2}
+      color: {r: 1, g: 0, b: 0, a: 0.5}
+      size: 0.1
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0}
+    m_Visible: 1
   - m_Transform: {fileID: 0}
     m_Style:
       shape: {fileID: 4300000, guid: 687b70eb9c49243639f9379f6965034f, type: 2}

@@ -108,7 +108,10 @@ public class SpineBalanceController : MonoBehaviour
     private void LateUpdate()
     {
         if (isUnstacking) return;
+
         ApplySpineRotation();
+
+        OnBalanceChanged?.Invoke(GetBalancePercentage());
     }
 
     private void CalculateVelocity()
@@ -238,7 +241,7 @@ public class SpineBalanceController : MonoBehaviour
         currentTilt = Mathf.Lerp(currentTilt, targetTilt, Time.deltaTime * 10f);
 
   
-        OnBalanceChanged?.Invoke(GetBalancePercentage());
+        //OnBalanceChanged?.Invoke(GetBalancePercentage());
 
  
         if (Mathf.Abs(accelerationTilt) > 1f || Mathf.Abs(momentumFromVelocity) > 1f)
@@ -246,6 +249,8 @@ public class SpineBalanceController : MonoBehaviour
             Debug.Log($"Tilt Sources - Input: {inputTilt:F1}, Momentum: {momentumFromVelocity:F1}, Acceleration: {accelerationTilt:F1}, Total: {totalMovementTilt:F1}");
         }
     }
+
+    
 
     private void CheckBalanceState()
     {

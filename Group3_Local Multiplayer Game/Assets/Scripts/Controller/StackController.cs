@@ -212,10 +212,19 @@ public class StackedController : MonoBehaviour
         //Debug.Log($"StackedController initialized: Bottom Player {bottom?.playerIndex} (Using Mouse: {_bottomUsingMouse}), Top Player {top?.playerIndex} (Using Mouse: {_topUsingMouse})");
     }
 
+    public void ResetPlayerMovement()
+    {
+        _moveInput = Vector2.zero;
+        _animator.SetFloat(_animIDSpeed, 0f);   
+    }
+
     private void Update()
     {
-        if (PauseScript.IsGamePaused) return;
-        if (!canMove) return;
+        if (PauseScript.IsGamePaused || !canMove)
+        {
+            ResetPlayerMovement();
+            return;
+        }
         GatherInputs();
 
         // Handles movement and physics

@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 
 public class PlayerGrabItem : MonoBehaviour
 {
@@ -7,6 +8,8 @@ public class PlayerGrabItem : MonoBehaviour
     [SerializeField] private Transform handIKTarget;       // IK target for the hand
     [SerializeField] private Transform handHoldPoint;      // Where items rest in the hand
     private Animator animator;
+    public Rig rig;
+    public float targetWeight;
 
     [Header("Settings")]
     public float reachSpeed = 6f;
@@ -29,6 +32,7 @@ public class PlayerGrabItem : MonoBehaviour
 
     void Update()
     {
+        rig.weight = Mathf.Lerp(rig.weight, targetWeight, Time.deltaTime * 10f);
         DetectItem();
 
         if (stackedController.GetGrabInput() && targetItem != null && !isHolding && !isReaching)
@@ -129,9 +133,11 @@ public class PlayerGrabItem : MonoBehaviour
         {
             if (targetItem != null)
                 targetItem.HideIcon();
+            targetWeight = 0f;
 
             if (closest != null)
                 closest.ShowIcon();
+            targetWeight = 1f;
 
             targetItem = closest;
         }

@@ -4,45 +4,82 @@ using TMPro;
 
 public class BalanceUI : MonoBehaviour
 {
-    public Image balanceMeter;
-    public TextMeshProUGUI balanceText;
-    public GameObject warningIcon;
-    public TextMeshProUGUI warningTimerText;
+    [Header("UI References")]
+    [SerializeField] private Image balanceMeter;
+    [SerializeField] private TextMeshProUGUI balanceText;
+    [SerializeField] private GameObject warningIcon;
+    [SerializeField] private TextMeshProUGUI warningTimerText;
+    [SerializeField] private Image timerFill;
 
-    public Color safeColor = Color.green;
-    public Color warningColor = Color.yellow;
-    public Color dangerColor = Color.red;
+    [Header("Colors")]
+    [SerializeField] private Color safeColor = Color.green;
+    [SerializeField] private Color warningColor = Color.yellow;
+    [SerializeField] private Color dangerColor = Color.red;
 
-    [SerializeField] private SpineBalanceController _balanceController;
+    [Header("Controller Reference")]
+    [SerializeField] private SpineBalanceController balanceController;
 
     private void Awake()
     {
-        _balanceController = FindFirstObjectByType<SpineBalanceController>();
+        // Fallback in case not assigned in inspector
+        if (balanceController == null)
+            balanceController = FindFirstObjectByType<SpineBalanceController>();
 
-        if (_balanceController != null)
+        if (balanceController != null)
         {
-            _balanceController.OnBalanceChanged += UpdateUI;
-            _balanceController.OnEnterCriticalZone += () => warningIcon.SetActive(true);
-            _balanceController.OnExitCriticalZone += () => warningIcon.SetActive(false);
+            balanceController.OnBalanceChanged += UpdateUI;
+            balanceController.OnEnterCriticalZone += HandleEnterCritical;
+            balanceController.OnExitCriticalZone += HandleExitCritical;
+
+            // ?? Force initial UI update immediately
+            UpdateUI(balanceController.GetBalancePercentage());
         }
 
-        if (warningIcon != null) warningIcon.SetActive(false);
+        if (warningIcon != null)
+            warningIcon.SetActive(false);
+
+        if (warningTimerText != null)
+            warningTimerText.text = "";
+    
     }
 
     private void Update()
     {
-        if (_balanceController != null && _balanceController.IsInCriticalZone())
+        if (balanceController == null) return;
+
+        if (balanceController.IsInCriticalZone())
         {
-            float timeLeft = _balanceController.GetTimeUntilUnstack();
+            float timeLeft = balanceController.GetTimeUntilUnstack();
+            float fillPercentage = balanceController.unstackDelay / timeLeft; 
+
             if (warningTimerText != null)
-            {
                 warningTimerText.text = $"{timeLeft:F1}s";
+
+
+            if(timerFill != null)
+            {
+                timerFill.enabled = true;
+                timerFill.fillAmount = fillPercentage; ;
+                //.color
+            }
+            
+        }
+        else
+        {
+            if (warningTimerText != null)
+                warningTimerText.text = "";
+
+            if (timerFill != null)
+            {
+                timerFill.enabled = false;
             }
         }
     }
 
     private void UpdateUI(float balancePercent)
     {
+        balancePercent = Mathf.Clamp01(balancePercent);
+
         if (balanceMeter != null)
         {
             balanceMeter.fillAmount = balancePercent;
@@ -57,15 +94,28 @@ public class BalanceUI : MonoBehaviour
 
         if (balanceText != null)
         {
-            balanceText.text = $"{balancePercent * 100:F0}%";
+            balanceText.text = $"{balancePercent * 100f:F0}%";
         }
+    }
+
+    private void HandleEnterCritical()
+    {
+        if (warningIcon != null)
+            warningIcon.SetActive(true);
+    }
+
+    private void HandleExitCritical()
+    {
+        if (warningIcon != null)
+            warningIcon.SetActive(false);
     }
 
     private void OnDestroy()
     {
-        if (_balanceController != null)
-        {
-            _balanceController.OnBalanceChanged -= UpdateUI;
-        }
+        if (balanceController == null) return;
+
+        balanceController.OnBalanceChanged -= UpdateUI;
+        balanceController.OnEnterCriticalZone -= HandleEnterCritical;
+        balanceController.OnExitCriticalZone -= HandleExitCritical;
     }
 }
