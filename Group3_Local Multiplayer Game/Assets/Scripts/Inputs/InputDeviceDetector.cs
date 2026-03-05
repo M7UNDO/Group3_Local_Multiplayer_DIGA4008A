@@ -1,22 +1,21 @@
-
+using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System;
 
-public class InputDeviceDetector : MonoBehaviour
+[RequireComponent(typeof(PlayerInput))]
+public class PlayerDeviceDetector : MonoBehaviour
 {
-    public static InputDeviceDetector Instance;
-
     public InputDeviceType CurrentDevice { get; private set; }
 
     public event Action<InputDeviceType> OnDeviceChanged;
 
+    private PlayerInput playerInput;
+
     private void Awake()
     {
-        if (Instance == null)
-            Instance = this;
-        else
-            Destroy(gameObject);
+        playerInput = GetComponent<PlayerInput>();
+        DetectDevice();
     }
 
     private void OnEnable()
@@ -35,10 +34,15 @@ public class InputDeviceDetector : MonoBehaviour
             return;
 
         var action = obj as InputAction;
-        if (action?.activeControl == null)
+
+        if (action == null || action.activeControl == null)
             return;
 
         var device = action.activeControl.device;
+
+        // only detect devices belonging to THIS player
+        if (!playerInput.devices.Contains(device))
+            return;
 
         InputDeviceType newDevice = GetDeviceType(device);
 
@@ -47,6 +51,15 @@ public class InputDeviceDetector : MonoBehaviour
             CurrentDevice = newDevice;
             OnDeviceChanged?.Invoke(CurrentDevice);
         }
+    }
+
+    private void DetectDevice()
+    {
+        if (playerInput.devices.Count == 0)
+            return;
+
+        var device = playerInput.devices[0];
+        CurrentDevice = GetDeviceType(device);
     }
 
     private InputDeviceType GetDeviceType(InputDevice device)

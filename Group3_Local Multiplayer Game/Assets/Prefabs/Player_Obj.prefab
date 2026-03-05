@@ -336,6 +336,7 @@ GameObject:
   - component: {fileID: 1922488013367666304}
   - component: {fileID: 955624919476449791}
   - component: {fileID: 9062998295765665840}
+  - component: {fileID: 162085389479179762}
   m_Layer: 6
   m_Name: Player_Obj
   m_TagString: Player
@@ -430,12 +431,25 @@ MonoBehaviour:
   RotationSmoothTime: 0.12
   SpeedChangeRate: 10
   LandingAudioClip: {fileID: 8300000, guid: 2d2de00f80c66a7499171138ed07ed59, type: 3}
-  FootstepAudioClips: []
+  FootstepAudioClips:
+  - {fileID: 8300000, guid: 872e1ca52dffd4747890648c77157a08, type: 3}
+  - {fileID: 8300000, guid: bc9fd638708451c4591f276338dfd303, type: 3}
+  - {fileID: 8300000, guid: 8b664bf2a053d3c41a2ec27bd4e35324, type: 3}
+  - {fileID: 8300000, guid: f04ea5b96edb1324bb03f5cb2a52c8ab, type: 3}
+  - {fileID: 8300000, guid: 600f2b3c8bdd74046957029bb5dff841, type: 3}
+  - {fileID: 8300000, guid: f159623b70c62004da958bc4144f42c1, type: 3}
+  - {fileID: 8300000, guid: 01187d4cdb2131c458180d8030d11527, type: 3}
+  - {fileID: 8300000, guid: 9014ce0e4373a9947bc8d05e57b4b6e7, type: 3}
+  - {fileID: 8300000, guid: b51c6f41ad48a0043ba1b7e2c6759ac9, type: 3}
+  - {fileID: 8300000, guid: 669931cdc17e1dc4a929f1bb8111746f, type: 3}
   FootstepAudioVolume: 0.5
   JumpHeight: 1
   Gravity: -15
   JumpTimeout: 0.5
   FallTimeout: 0.15
+  CrouchSpeed: 1.2
+  CrouchHeight: 1
+  StandingHeight: 2
   Grounded: 1
   GroundedOffset: -0.14
   GroundedRadius: 0.4
@@ -449,6 +463,10 @@ MonoBehaviour:
   LockCameraPosition: 0
   _animator: {fileID: 5461503311798659565}
   _playerCam: {fileID: 1178402540377742826}
+  playerCameraRoot: {fileID: 4257132492701310634}
+  standingCameraHeight: 0
+  crouchCameraHeight: 0.3
+  cameraLerpSpeed: 10
 --- !u!114 &5857395204284406171
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -465,6 +483,7 @@ MonoBehaviour:
   look: {x: 0, y: 0}
   jump: 0
   sprint: 0
+  crouch: 0
   stack: 0
   grab: 0
   balance: {x: 0, y: 0}
@@ -599,6 +618,18 @@ MonoBehaviour:
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 1178402540377742826}
+--- !u!114 &162085389479179762
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1435457120622288664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3d44e377b244344fb964fa9e3d79dc7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDeviceDetector
 --- !u!1 &1438617374368765315
 GameObject:
   m_ObjectHideFlags: 0
@@ -2930,6 +2961,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2855224205422107347}
     m_Modifications:
+    - target: {fileID: 3985454974622120694, guid: 450eafd4296669042a950c91eec6e990, type: 3}
+      propertyPath: deviceDetector
+      value: 
+      objectReference: {fileID: 162085389479179762}
     - target: {fileID: 4647537709019538758, guid: 450eafd4296669042a950c91eec6e990, type: 3}
       propertyPath: m_Layer
       value: 6

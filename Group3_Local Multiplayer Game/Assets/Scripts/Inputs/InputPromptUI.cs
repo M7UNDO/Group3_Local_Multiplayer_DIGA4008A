@@ -1,26 +1,25 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class InputpromptUI : MonoBehaviour
+public class PlayerInputPromptUI : MonoBehaviour
 {
-    [Header("Target Image")]
+    [SerializeField] private PlayerDeviceDetector deviceDetector;
+
     [SerializeField] private Image promptImage;
 
-    [Header("Sprites")]
     [SerializeField] private Sprite keyboardSprite;
     [SerializeField] private Sprite xboxSprite;
     [SerializeField] private Sprite playStationSprite;
 
     private void Start()
     {
-        UpdateSprite(InputDeviceDetector.Instance.CurrentDevice);
-        InputDeviceDetector.Instance.OnDeviceChanged += UpdateSprite;
+        UpdateSprite(deviceDetector.CurrentDevice);
+        deviceDetector.OnDeviceChanged += UpdateSprite;
     }
 
     private void OnDestroy()
     {
-        if (InputDeviceDetector.Instance != null)
-            InputDeviceDetector.Instance.OnDeviceChanged -= UpdateSprite;
+        deviceDetector.OnDeviceChanged -= UpdateSprite;
     }
 
     private void UpdateSprite(InputDeviceType deviceType)
