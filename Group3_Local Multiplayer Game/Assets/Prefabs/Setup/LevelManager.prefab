@@ -75,13 +75,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ManageUI
   animator: {fileID: 0}
   controlUIPanel: {fileID: 0}
-  audioUIPanel: {fileID: 0}
+  settingsPanel: {fileID: 0}
   hasMenuElements: 1
   menuUIElements:
   - {fileID: 0}
-  highlightText: {fileID: 0}
-  buttonTxt: []
-  loadToggle: {fileID: 0}
 --- !u!114 &2224599272326086350
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -94,7 +91,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c57d31ae96247c4b88cbb47394ae688, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StackManager
-  stackedCharacterPrefab: {fileID: 3416085043218361992, guid: d16c7c4da50d79641a57c8da479237bf, type: 3}
-  stackHeightOffset: 1.5
+  stackedCharacterPrefab: {fileID: 995853267339866125, guid: e455b8a2c1f76674b8ace0f47af774b6, type: 3}
+  stackHeightOffset: 0
   playerInputManager: {fileID: 0}
+  stackSFX: {fileID: 0}
+  unstackSFX: {fileID: 0}
+  operationCooldown: 1
   stackActive: 0
