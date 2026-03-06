@@ -15,6 +15,12 @@ public class WaypointEnemy : MonoBehaviour
     public float suspicionDecreaseRate = 10f;
     public float suspicionThreshold = 100f;
 
+    [Header("Alert Settings")]
+    public float alertDuration = 1.5f;
+    public AudioClip alertGrunt;
+
+    private bool isAlerting;
+
     [Header("Catch Settings")]
     public float catchRange = 2f;
     public float restartDelay = 2f;
@@ -96,9 +102,9 @@ public class WaypointEnemy : MonoBehaviour
             {
                 currentState = State.Catch;
             }
-            else if (suspicion >= suspicionThreshold)
+            else if (suspicion >= suspicionThreshold && !isAlerting)
             {
-                currentState = State.Chase;
+                StartCoroutine(AlertBeforeChase());
             }
             else if (suspicion > 0)
             {
@@ -143,6 +149,29 @@ public class WaypointEnemy : MonoBehaviour
 
         if (!isCatching)
             RotateTowardsMovementDirection();
+    }
+
+    IEnumerator AlertBeforeChase()
+    {
+        isAlerting = true;
+
+        agent.ResetPath();
+
+        animator.SetTrigger("Alert");
+
+        if (alertGrunt != null)
+            AudioSource.PlayClipAtPoint(alertGrunt, transform.position);
+
+        yield return new WaitForSeconds(alertDuration);
+
+        currentState = State.Chase;
+
+        isAlerting = false;
+    }
+
+    public bool IsChasing()
+    {
+        return currentState == State.Chase;
     }
 
     // ---------------- PLAYER DETECTION ----------------
