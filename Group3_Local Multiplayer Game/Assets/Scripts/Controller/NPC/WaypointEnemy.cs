@@ -7,14 +7,13 @@ public class WaypointEnemy : MonoBehaviour
     [Header("References")]
     public Animator animator;
     public Transform waypointGroup;
+    public AISensor sensor;
 
-    [Header("Detection Settings")]
-    public float detectionRadius = 15f;
-    public float visionAngle = 60f;
-
-    [Header("Layers")]
-    public LayerMask playerMask;
-    public LayerMask obstacleMask;
+    [Header("Suspicion System")]
+    public float suspicion = 0f;
+    public float suspicionIncreaseRate = 25f;
+    public float suspicionDecreaseRate = 10f;
+    public float suspicionThreshold = 100f;
 
     [Header("Catch Settings")]
     public float catchRange = 2f;
@@ -27,8 +26,14 @@ public class WaypointEnemy : MonoBehaviour
     public float rotationSpeed = 7f;
     public float maxChaseDistance = 25f;
 
+    [Header("Idle Settings")]
+    public float idleTime = 2f;
+    public float lookAroundAngle = 60f;
+    public float lookSpeed = 3f;
+
     private NavMeshAgent agent;
     private Transform currentTarget;
+
     private bool isCatching;
     private bool gameOver;
 
@@ -36,7 +41,11 @@ public class WaypointEnemy : MonoBehaviour
     private int currentWaypointIndex = 0;
     private Vector3 patrolStartPoint;
 
-    private enum State { Patrol, Chase, Catch, Returning }
+    private bool isIdle;
+    private float idleTimer;
+    private Quaternion targetLookRotation;
+
+    private enum State { Patrol, Suspicious, Chase, Catch, Returning }
     private State currentState;
 
     void Start()
@@ -47,6 +56,7 @@ public class WaypointEnemy : MonoBehaviour
         if (waypointGroup != null && waypointGroup.childCount > 1)
         {
             waypoints = new Transform[waypointGroup.childCount];
+
             for (int i = 0; i < waypointGroup.childCount; i++)
                 waypoints[i] = waypointGroup.GetChild(i);
 
@@ -74,24 +84,40 @@ public class WaypointEnemy : MonoBehaviour
 
         float distanceFromStart = Vector3.Distance(transform.position, patrolStartPoint);
 
-        // Determine AI state
+        HandleSuspicion();
+
         if (!isCatching)
         {
-            if (distanceToPlayer <= catchRange)
+            if (distanceToPlayer <= catchRange && currentState == State.Chase)
+            {
                 currentState = State.Catch;
-            else if (currentTarget != null && distanceFromStart <= maxChaseDistance)
+            }
+            else if (suspicion >= suspicionThreshold)
+            {
                 currentState = State.Chase;
+            }
+            else if (suspicion > 0)
+            {
+                currentState = State.Suspicious;
+            }
             else if (distanceFromStart > maxChaseDistance)
+            {
                 currentState = State.Returning;
+            }
             else
+            {
                 currentState = State.Patrol;
+            }
         }
 
-        // Execute state behavior
         switch (currentState)
         {
             case State.Patrol:
                 Patrol();
+                break;
+
+            case State.Suspicious:
+                Suspicious();
                 break;
 
             case State.Chase:
@@ -107,54 +133,82 @@ public class WaypointEnemy : MonoBehaviour
                 break;
         }
 
-        // Animator logic
-        animator.SetBool("isWalking", currentState == State.Patrol || currentState == State.Returning);
+        animator.SetBool("isWalking", !isIdle && (currentState == State.Patrol || currentState == State.Returning));
         animator.SetBool("isRunning", currentState == State.Chase);
+        animator.SetBool("isIdle", isIdle);
 
         if (!isCatching)
             RotateTowardsMovementDirection();
     }
 
     // ---------------- PLAYER DETECTION ----------------
+
     Transform DetectPlayer()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, detectionRadius, playerMask);
+        if (sensor == null || sensor.Objects.Count == 0)
+            return null;
 
-        Transform closestPlayer = null;
         float closestDistance = Mathf.Infinity;
+        Transform closest = null;
 
-        foreach (Collider hit in hits)
+        foreach (GameObject obj in sensor.Objects)
         {
-            Transform player = hit.transform;
-            Vector3 playerCenter = player.position + Vector3.up * 1f;
-            Vector3 dirToPlayer = (playerCenter - transform.position).normalized;
-            float distance = Vector3.Distance(transform.position, playerCenter);
-            float angle = Vector3.Angle(transform.forward, dirToPlayer);
+            float dist = Vector3.Distance(transform.position, obj.transform.position);
 
-            if (angle > visionAngle / 2f)
-                continue;
-
-            if (!Physics.Raycast(transform.position + Vector3.up, dirToPlayer, distance, obstacleMask))
+            if (dist < closestDistance)
             {
-                if (distance < closestDistance)
-                {
-                    closestDistance = distance;
-                    closestPlayer = player;
-                }
+                closestDistance = dist;
+                closest = obj.transform;
             }
         }
 
-        return closestPlayer;
+        return closest;
+    }
+
+    // ---------------- SUSPICION ----------------
+
+    void HandleSuspicion()
+    {
+        if (currentTarget != null)
+        {
+            suspicion += suspicionIncreaseRate * Time.deltaTime;
+        }
+        else
+        {
+            suspicion -= suspicionDecreaseRate * Time.deltaTime;
+        }
+
+        suspicion = Mathf.Clamp(suspicion, 0, suspicionThreshold);
     }
 
     // ---------------- PATROL ----------------
+
     void Patrol()
     {
         agent.speed = walkSpeed;
 
+        if (isIdle)
+        {
+            idleTimer -= Time.deltaTime;
+
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetLookRotation,
+                Time.deltaTime * lookSpeed
+            );
+
+            if (idleTimer <= 0f)
+            {
+                isIdle = false;
+                GoToNextWaypoint();
+            }
+
+            return;
+        }
+
         if (!agent.pathPending && agent.remainingDistance < 0.5f)
         {
-            GoToNextWaypoint();
+            StartIdle();
         }
     }
 
@@ -166,7 +220,20 @@ public class WaypointEnemy : MonoBehaviour
         currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
     }
 
+    // ---------------- SUSPICIOUS ----------------
+
+    void Suspicious()
+    {
+        agent.speed = walkSpeed;
+
+        if (currentTarget != null)
+        {
+            agent.SetDestination(currentTarget.position);
+        }
+    }
+
     // ---------------- RETURN ----------------
+
     void ReturnToPatrol()
     {
         agent.speed = walkSpeed;
@@ -183,6 +250,7 @@ public class WaypointEnemy : MonoBehaviour
     }
 
     // ---------------- CHASE ----------------
+
     void ChasePlayer()
     {
         agent.speed = runSpeed;
@@ -192,6 +260,7 @@ public class WaypointEnemy : MonoBehaviour
     }
 
     // ---------------- CAUGHT ----------------
+
     void CatchPlayer()
     {
         if (isCatching || currentTarget == null)
@@ -199,12 +268,18 @@ public class WaypointEnemy : MonoBehaviour
 
         isCatching = true;
         gameOver = true;
+
         agent.ResetPath();
 
-        Vector3 lookPos = new Vector3(currentTarget.position.x, transform.position.y, currentTarget.position.z);
+        Vector3 lookPos = new Vector3(
+            currentTarget.position.x,
+            transform.position.y,
+            currentTarget.position.z
+        );
+
         transform.rotation = Quaternion.LookRotation(lookPos - transform.position);
 
-        animator.SetTrigger("Attack"); // Yelling animation
+        animator.SetTrigger("Attack");
 
         StartCoroutine(RestartGame());
     }
@@ -217,42 +292,35 @@ public class WaypointEnemy : MonoBehaviour
             restartScreen.SetActive(true);
     }
 
+    // ---------------- IDLE LOOK AROUND ----------------
+
+    void StartIdle()
+    {
+        isIdle = true;
+        idleTimer = idleTime;
+
+        agent.ResetPath();
+
+        float randomAngle = Random.Range(-lookAroundAngle, lookAroundAngle);
+
+        targetLookRotation =
+            Quaternion.Euler(0, transform.eulerAngles.y + randomAngle, 0);
+    }
+
     // ---------------- ROTATION ----------------
+
     void RotateTowardsMovementDirection()
     {
         if (agent.velocity.sqrMagnitude > 0.1f)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(agent.velocity.normalized);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+            Quaternion targetRotation =
+                Quaternion.LookRotation(agent.velocity.normalized);
+
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRotation,
+                Time.deltaTime * rotationSpeed
+            );
         }
     }
-
-#if UNITY_EDITOR
-    void OnDrawGizmosSelected()
-    {
-        // Detection radius
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, detectionRadius);
-
-        // Vision cone
-        Vector3 left = Quaternion.Euler(0, -visionAngle / 2, 0) * transform.forward;
-        Vector3 right = Quaternion.Euler(0, visionAngle / 2, 0) * transform.forward;
-        Gizmos.color = Color.blue;
-        Gizmos.DrawLine(transform.position, transform.position + left * detectionRadius);
-        Gizmos.DrawLine(transform.position, transform.position + right * detectionRadius);
-
-        // Waypoints
-        if (waypointGroup != null)
-        {
-            Gizmos.color = Color.yellow;
-            for (int i = 0; i < waypointGroup.childCount; i++)
-            {
-                Transform wp = waypointGroup.GetChild(i);
-                Gizmos.DrawWireSphere(wp.position, 0.4f);
-                if (i + 1 < waypointGroup.childCount)
-                    Gizmos.DrawLine(wp.position, waypointGroup.GetChild(i + 1).position);
-            }
-        }
-    }
-#endif
 }

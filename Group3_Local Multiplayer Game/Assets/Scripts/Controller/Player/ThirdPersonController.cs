@@ -125,7 +125,7 @@ public class ThirdPersonController : MonoBehaviour
 
         AssignAnimationIDs();
 
-        // reset our timeouts on start
+    
         _jumpTimeoutDelta = JumpTimeout;
         _fallTimeoutDelta = FallTimeout;
     }
@@ -192,7 +192,7 @@ public class ThirdPersonController : MonoBehaviour
         Grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers,
             QueryTriggerInteraction.Ignore);
 
-        // update animator if using character
+
         if (_hasAnimator)
         {
             _animator.SetBool(_animIDGrounded, Grounded);
@@ -201,10 +201,10 @@ public class ThirdPersonController : MonoBehaviour
 
     private void CameraRotation()
     {
-        // if there is an input and camera position is not fixed
+
         if (_input.look.sqrMagnitude >= _threshold && !LockCameraPosition)
         {
-            //Don't multiply mouse input by Time.deltaTime;
+
             float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
 
             _cinemachineTargetYaw += _input.look.x * deltaTimeMultiplier;
@@ -215,7 +215,7 @@ public class ThirdPersonController : MonoBehaviour
         _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
         _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
 
-        // Cinemachine will follow this target
+
         CinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride,
             _cinemachineTargetYaw, 0.0f);
     }
@@ -304,7 +304,7 @@ public class ThirdPersonController : MonoBehaviour
             float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
                 RotationSmoothTime);
 
-            // rotate to face input direction relative to camera position
+ 
             transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
         }
 
@@ -328,10 +328,10 @@ public class ThirdPersonController : MonoBehaviour
     {
         if (Grounded)
         {
-            // reset the fall timeout timer
+            
             _fallTimeoutDelta = FallTimeout;
 
-            // update animator if using character
+            
             if (_hasAnimator)
             {
                 _animator.SetBool(_animIDJump, false);
@@ -343,20 +343,18 @@ public class ThirdPersonController : MonoBehaviour
                 _verticalVelocity = -2f;
             }
 
-            // Jump
             if (_input.jump && _jumpTimeoutDelta <= 0.0f)
             {
 
                 _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
 
-                // update animator if using character
                 if (_hasAnimator)
                 {
                     _animator.SetBool(_animIDJump, true);
                 }
             }
 
-            // jump timeout
+     
             if (_jumpTimeoutDelta >= 0.0f)
             {
                 _jumpTimeoutDelta -= Time.deltaTime;
@@ -364,24 +362,23 @@ public class ThirdPersonController : MonoBehaviour
         }
         else
         {
-            // reset the jump timeout timer
+    
             _jumpTimeoutDelta = JumpTimeout;
 
-            // fall timeout
             if (_fallTimeoutDelta >= 0.0f)
             {
                 _fallTimeoutDelta -= Time.deltaTime;
             }
             else
             {
-                // update animator if using character
+              
                 if (_hasAnimator)
                 {
                     _animator.SetBool(_animIDFreeFall, true);
                 }
             }
 
-            // if we are not grounded, do not jump
+       
             _input.jump = false;
         }
 
@@ -398,7 +395,7 @@ public class ThirdPersonController : MonoBehaviour
         return Mathf.Clamp(lfAngle, lfMin, lfMax);
     }
 
-    private void OnDrawGizmosSelected()
+    /*private void OnDrawGizmosSelected()
     {
         Color transparentGreen = new Color(0.0f, 1.0f, 0.0f, 0.35f);
         Color transparentRed = new Color(1.0f, 0.0f, 0.0f, 0.35f);
@@ -410,7 +407,7 @@ public class ThirdPersonController : MonoBehaviour
         Gizmos.DrawSphere(
             new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z),
             GroundedRadius);
-    }
+    }*/
 
     private void OnFootstep(AnimationEvent animationEvent)
     {

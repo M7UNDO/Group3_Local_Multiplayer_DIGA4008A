@@ -75,7 +75,7 @@ public class StackManager : MonoBehaviour
     {
         if (activePlayers.Count < 2 || stackActive || stackInProgress || unstackInProgress)
         {
-            //UIManager.Instance.HideAllPrompts();
+
             return;
         }
 
@@ -84,7 +84,7 @@ public class StackManager : MonoBehaviour
 
         float dist = Vector3.Distance(p1.position, p2.position);
 
-        if (dist < 3f)
+        if (dist < 2f)
         {
             activePlayers[0].playerObject.GetComponent<PlayerUI>().StackPromptDisplay(true);
             activePlayers[1].playerObject.GetComponent<PlayerUI>().StackPromptDisplay(true);

@@ -1,16 +1,22 @@
+using System.Collections.Generic;
 using UnityEngine;
 
+[ExecuteInEditMode]
 public class AISensor : MonoBehaviour
 {
     public float distance = 10f;
     public float angle = 30f;
     public float height = 1.0f;
-    public Color sensorColour = Color.red;
+    public Color meshColour = Color.red;
 
     public int scanfrequency = 30;
 
+    public LayerMask layers;
+    public LayerMask occlusionLayers;
+    public List<GameObject> Objects = new List<GameObject>();
     Collider[] colliders = new Collider[50];
     Mesh mesh;
+    int count;
     float scanInterval;
     float scanTimer;
 
@@ -87,8 +93,6 @@ public class AISensor : MonoBehaviour
             currentAngle += deltaAngle;
         }
 
-        
-
         for(int i = 0; i < numOfVerts; ++i)
         {
             triangles[i] = i;
@@ -110,12 +114,79 @@ public class AISensor : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        scanTimer -= Time.deltaTime;
+        if(scanTimer < 0)
+        {
+            scanTimer += scanInterval;
+            Scan();
+        }
+    }
+
+    private void Scan()
+    {
+        count = Physics.OverlapSphereNonAlloc(transform.position, distance, colliders, layers, QueryTriggerInteraction.Collide);
+
+        Objects.Clear();
+
+        for(int i = 0;i < count; ++i)
+        {
+            GameObject obj = colliders[i].gameObject;
+            if (IsInSight(obj))
+            {
+                Objects.Add(obj);
+            }
+        }
+    }
+
+    public bool IsInSight(GameObject obj)
+    {
+        Vector3 origin = transform.position;
+        Vector3 dest = obj.transform.position;
+        Vector3 direction = dest - origin;
+
+        if(direction.y < 0 || direction.y > height)
+        {
+            return false;
+        }
+        direction.y = 0;
+        float deltaAngle = Vector3.Angle(direction, transform.forward);
+        if(deltaAngle > angle)
+        {
+            return false;
+        }
+
+        if(Physics.Linecast(origin, dest, occlusionLayers))
+        {
+            return false;
+        }
+        return true;
     }
 
     private void OnValidate()
     {
         mesh = CreateWedgeMesh();
         scanInterval = 1.0f / scanfrequency;
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (mesh)
+        {
+            Gizmos.color = meshColour;
+            Gizmos.DrawMesh(mesh, transform.position, transform.rotation);
+
+        }
+
+        Gizmos.DrawWireSphere(transform.position, distance);
+        for(int i = 0;i < count; ++i)
+        {
+            Gizmos.DrawSphere(colliders[i].transform.position, 0.2f);
+        }
+
+        Gizmos.color = Color.green;
+        foreach( var obj in Objects)
+        {
+            Gizmos.DrawSphere(obj.transform.position, 0.2f);
+        }
     }
 }

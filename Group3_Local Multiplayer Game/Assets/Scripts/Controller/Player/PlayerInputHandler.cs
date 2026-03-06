@@ -247,9 +247,9 @@ public class PlayerInputHandler : MonoBehaviour
     {
         stack = newStackState;
 
-        if (!stack) return;
+        if (!stack || crouch) return;
 
-        //if already stacked, unstack instead of stacking again
+        //if already stacked, unstack
         if (StackManager.Instance != null && StackManager.Instance.stackActive)
         {
             StackManager.Instance.Unstack();
