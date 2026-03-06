@@ -331,12 +331,13 @@ GameObject:
   m_Component:
   - component: {fileID: 3902418019268635772}
   - component: {fileID: 4115994944197445806}
+  - component: {fileID: 4933552278937563550}
   - component: {fileID: 6127767829232748110}
   - component: {fileID: 1851169706139775658}
   - component: {fileID: 6789586922886700002}
   - component: {fileID: 7274539081289962497}
   - component: {fileID: 8765037100302165603}
-  - component: {fileID: 4933552278937563550}
+  - component: {fileID: 5480463621495694611}
   m_Layer: 6
   m_Name: Aj_Stacked_IK_2
   m_TagString: Player
@@ -394,6 +395,28 @@ CharacterController:
   m_SkinWidth: 0.02
   m_MinMoveDistance: 0
   m_Center: {x: 0, y: 0.93, z: 0}
+--- !u!95 &4933552278937563550
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 995853267339866125}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 877798597d3bb894bb8aace7e1cbd938, type: 3}
+  m_Controller: {fileID: 9100000, guid: 2746d86dc5af9f14484875ee19e6cba9, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &6127767829232748110
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -526,10 +549,11 @@ MonoBehaviour:
   balanceText: {fileID: 5592859015823735754}
   warningIcon: {fileID: 2096755714396042920}
   warningTimerText: {fileID: 8653656144664021183}
+  timerFill: {fileID: 0}
   safeColor: {r: 0, g: 1, b: 0, a: 1}
   warningColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   dangerColor: {r: 1, g: 0, b: 0, a: 1}
-  _balanceController: {fileID: 6789586922886700002}
+  balanceController: {fileID: 0}
 --- !u!114 &8765037100302165603
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -628,28 +652,108 @@ MonoBehaviour:
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 3173027603002078804}
---- !u!95 &4933552278937563550
-Animator:
-  serializedVersion: 7
+--- !u!114 &5480463621495694611
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 995853267339866125}
   m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 877798597d3bb894bb8aace7e1cbd938, type: 3}
-  m_Controller: {fileID: 22100000, guid: 5b3b3e22074ed28408346575b4f58f13, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2d8418b0b9634b1892b0268dd9c2743, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.BoneRenderer
+  boneShape: 1
+  drawBones: 1
+  drawTripods: 0
+  boneSize: 1
+  tripodSize: 1
+  boneColor: {r: 0, g: 0, b: 1, a: 0.5}
+  m_Transforms:
+  - {fileID: 1489757744258446339}
+  - {fileID: 7047748031991543698}
+  - {fileID: 7259719433094937600}
+  - {fileID: 8636247183009654098}
+  - {fileID: 548494958751995937}
+  - {fileID: 4096198333242983506}
+  - {fileID: 2542391258510556942}
+  - {fileID: 6866330918838494079}
+  - {fileID: 7898562983998811768}
+  - {fileID: 3065095177502667067}
+  - {fileID: 7300796400368287965}
+  - {fileID: 511813541286920703}
+  - {fileID: 3866928653019025030}
+  - {fileID: 4769335764867384552}
+  - {fileID: 7585004242988397628}
+  - {fileID: 2862021549006987645}
+  - {fileID: 885142598742800573}
+  - {fileID: 9091960861823588819}
+  - {fileID: 5899628784249244598}
+  - {fileID: 3466774843127927170}
+  - {fileID: 7294200501901749264}
+  - {fileID: 8316667824398498755}
+  - {fileID: 2370214687185582351}
+  - {fileID: 173974903792894019}
+  - {fileID: 1758049913691923605}
+  - {fileID: 7139741918964126281}
+  - {fileID: 1980747221715029734}
+  - {fileID: 5145250169069138544}
+  - {fileID: 4704860535591964177}
+  - {fileID: 7007576084019422562}
+  - {fileID: 713978168659804214}
+  - {fileID: 4593530736394666924}
+  - {fileID: 810782674066593309}
+  - {fileID: 590293130077895772}
+  - {fileID: 4312998264423912874}
+  - {fileID: 4790746580055427841}
+  - {fileID: 1243879666115243408}
+  - {fileID: 2932504672486751261}
+  - {fileID: 5992576268777400369}
+  - {fileID: 6420302589424954370}
+  - {fileID: 7550344872716603895}
+  - {fileID: 580545612840911735}
+  - {fileID: 115558231545557030}
+  - {fileID: 2563370832805752}
+  - {fileID: 7134846024956403262}
+  - {fileID: 7933650870504762941}
+  - {fileID: 1682035841478203454}
+  - {fileID: 5542025980072838031}
+  - {fileID: 6838353013225333693}
+  - {fileID: 8799371331689698526}
+  - {fileID: 3321507210365686796}
+  - {fileID: 517413661127901862}
+  - {fileID: 8935023274474687039}
+  - {fileID: 2642030396955852477}
+  - {fileID: 7694519001488573489}
+  - {fileID: 4696514114582709100}
+  - {fileID: 5013417650680861687}
+  - {fileID: 1016593607316483129}
+  - {fileID: 7013322293737804416}
+  - {fileID: 7096846008750691525}
+  - {fileID: 1771559803868916330}
+  - {fileID: 3500092519855943764}
+  - {fileID: 6213787076129330607}
+  - {fileID: 7562492162431125841}
+  - {fileID: 4771922682412263410}
+  - {fileID: 4609508266075585687}
+  - {fileID: 3411313315179522011}
+  - {fileID: 8994625713846176178}
+  - {fileID: 2652117763563049727}
+  - {fileID: 6065226020822649022}
+  - {fileID: 1729193259080723943}
+  - {fileID: 2329943110868922770}
+  - {fileID: 589294153390972447}
+  - {fileID: 1386958802496501365}
+  - {fileID: 1141680529469692916}
+  - {fileID: 1842407536658279708}
+  - {fileID: 2713554658059689521}
+  - {fileID: 2684275904270979857}
+  - {fileID: 1026263254403911244}
+  - {fileID: 7101736153641953044}
+  - {fileID: 7611925878998150246}
+  - {fileID: 4838457748307319089}
+  - {fileID: 5677169105020158529}
 --- !u!1 &1054313040686851145
 GameObject:
   m_ObjectHideFlags: 0
