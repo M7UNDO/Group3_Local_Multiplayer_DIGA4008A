@@ -16139,6 +16139,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2012355321}
   - component: {fileID: 2012355322}
+  - component: {fileID: 2012355323}
   m_Layer: 0
   m_Name: AudioManager
   m_TagString: Untagged
@@ -16181,6 +16182,29 @@ MonoBehaviour:
   musicVolumeSlider: {fileID: 2050771302}
   sfxVolumeSlider: {fileID: 2098745738}
   uiVolumeSlider: {fileID: 1751005912}
+--- !u!114 &2012355323
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2012355320}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7861be0de09b88a4c95cdadb3fc49827, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BackgroundMusicManager
+  audioSource: {fileID: 0}
+  backgroundTracks:
+  - {fileID: 8300000, guid: fc037dbf010d9d04fbb8e74b76a947a9, type: 3}
+  - {fileID: 8300000, guid: 204ebde6b922f024983a9344f3fb21c5, type: 3}
+  - {fileID: 8300000, guid: 8412a414472c5184ab8e3cb39d6e7285, type: 3}
+  suspensfulTracks:
+  - {fileID: 8300000, guid: 45fbee2c1ff92b3429ffa0f607d266f5, type: 3}
+  - {fileID: 8300000, guid: 94b80399dadabf14d9b05dc683f36a99, type: 3}
+  playRandomly: 0
+  loopAll: 1
+  fadeDuration: 2
 --- !u!1 &2012966653
 GameObject:
   m_ObjectHideFlags: 0
