@@ -16140,6 +16140,7 @@ GameObject:
   - component: {fileID: 2012355321}
   - component: {fileID: 2012355322}
   - component: {fileID: 2012355323}
+  - component: {fileID: 2012355324}
   m_Layer: 0
   m_Name: AudioManager
   m_TagString: Untagged
@@ -16189,12 +16190,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2012355320}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7861be0de09b88a4c95cdadb3fc49827, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BackgroundMusicManager
-  audioSource: {fileID: 0}
+  audioSource: {fileID: 2012355324}
   backgroundTracks:
   - {fileID: 8300000, guid: fc037dbf010d9d04fbb8e74b76a947a9, type: 3}
   - {fileID: 8300000, guid: 204ebde6b922f024983a9344f3fb21c5, type: 3}
@@ -16202,9 +16203,106 @@ MonoBehaviour:
   suspensfulTracks:
   - {fileID: 8300000, guid: 45fbee2c1ff92b3429ffa0f607d266f5, type: 3}
   - {fileID: 8300000, guid: 94b80399dadabf14d9b05dc683f36a99, type: 3}
-  playRandomly: 0
+  playRandomly: 1
   loopAll: 1
   fadeDuration: 2
+--- !u!82 &2012355324
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2012355320}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &2012966653
 GameObject:
   m_ObjectHideFlags: 0
@@ -21389,7 +21487,7 @@ MonoBehaviour:
   waypointGroup: {fileID: 924898347}
   sensor: {fileID: 1459257051}
   suspicion: 0
-  suspicionIncreaseRate: 25
+  suspicionIncreaseRate: 50
   suspicionDecreaseRate: 10
   suspicionThreshold: 100
   loseSightDelay: 1.5
@@ -21406,8 +21504,18 @@ MonoBehaviour:
   lookAroundAngle: 60
   lookSpeed: 3
   LandingAudioClip: {fileID: 0}
-  FootstepAudioClips: []
-  FootstepAudioVolume: 0.5
+  FootstepAudioClips:
+  - {fileID: 8300000, guid: 872e1ca52dffd4747890648c77157a08, type: 3}
+  - {fileID: 8300000, guid: bc9fd638708451c4591f276338dfd303, type: 3}
+  - {fileID: 8300000, guid: 8b664bf2a053d3c41a2ec27bd4e35324, type: 3}
+  - {fileID: 8300000, guid: f04ea5b96edb1324bb03f5cb2a52c8ab, type: 3}
+  - {fileID: 8300000, guid: 600f2b3c8bdd74046957029bb5dff841, type: 3}
+  - {fileID: 8300000, guid: f159623b70c62004da958bc4144f42c1, type: 3}
+  - {fileID: 8300000, guid: 01187d4cdb2131c458180d8030d11527, type: 3}
+  - {fileID: 8300000, guid: 9014ce0e4373a9947bc8d05e57b4b6e7, type: 3}
+  - {fileID: 8300000, guid: b51c6f41ad48a0043ba1b7e2c6759ac9, type: 3}
+  - {fileID: 8300000, guid: 669931cdc17e1dc4a929f1bb8111746f, type: 3}
+  FootstepAudioVolume: 0.25
 --- !u!195 &5235480534035744723
 NavMeshAgent:
   m_ObjectHideFlags: 0
