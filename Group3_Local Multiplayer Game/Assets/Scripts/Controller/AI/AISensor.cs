@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[ExecuteInEditMode]
+[ExecuteAlways]
 public class AISensor : MonoBehaviour
 {
     public float distance = 10f;
@@ -26,11 +26,11 @@ public class AISensor : MonoBehaviour
 
         int segments = 10;
 
-        int numOfTris = (segments * 4) + 2 + 2;
+        int numOfTris = (segments * 4) + 4;
         int numOfVerts = numOfTris * 3;
 
         Vector3[] vertices = new Vector3[numOfVerts];
-        int[] triangles = new int[numOfTris];
+        int[] triangles = new int[numOfVerts];
 
         Vector3 bottomCenter  = Vector3.zero;
         Vector3 bottomLeft = Quaternion.Euler(0, -angle, 0) * Vector3.forward * distance;
@@ -109,6 +109,9 @@ public class AISensor : MonoBehaviour
     void Start()
     {
         scanInterval = 1.0f / scanfrequency;
+
+        MeshFilter mf = GetComponent<MeshFilter>();
+        mf.mesh = CreateWedgeMesh();
     }
 
     // Update is called once per frame
@@ -166,6 +169,11 @@ public class AISensor : MonoBehaviour
     {
         mesh = CreateWedgeMesh();
         scanInterval = 1.0f / scanfrequency;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        Debug.Log("Something entered: " + other.name);
     }
 
     private void OnDrawGizmos()
