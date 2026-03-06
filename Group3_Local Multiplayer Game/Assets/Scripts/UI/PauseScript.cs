@@ -48,6 +48,11 @@ public class PauseScript : MonoBehaviour
             manageUI.SettingsPanel();
             return;
         }
+        else if (manageUI.controlUIPanel.activeSelf)
+        {
+            manageUI.ControlPanel();
+            return;
+        }
 
         toggle = !toggle;
 

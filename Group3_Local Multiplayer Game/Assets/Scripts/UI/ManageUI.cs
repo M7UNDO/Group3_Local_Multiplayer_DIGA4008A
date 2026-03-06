@@ -152,28 +152,38 @@ public class ManageUI : MonoBehaviour
         }
     }
 
-    /*
-    public void GameSaved()
+    public void ControlPanel()
     {
-        gameStateTxt.gameObject.SetActive(true);
-        gameStateTxt.text = "Game Saved!";
-        gameStateTxt.color = savedColour;
-        StartCoroutine(DeactivateAfterDelay(gameStateTxt.gameObject, 1.5f));
-    }
+        toggle = !toggle;
 
-    private IEnumerator DeactivateAfterDelay(GameObject obj, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        obj.SetActive(false);
-    }
+        if (!toggle)
+        {
+            animator.SetBool("Controls", false);
+            controlUIPanel.SetActive(false);
 
-    public void GameReset()
-    {
-        gameStateTxt.gameObject.SetActive(true);
-        gameStateTxt.text = "Game Reset!";
-        gameStateTxt.color = resetColour;
-        StartCoroutine(DeactivateAfterDelay(gameStateTxt.gameObject, 1.5f));
-    }*/
+            if (hasMenuElements)
+            {
+                foreach (GameObject elem in menuUIElements)
+                {
+                    elem.SetActive(true);
+
+                }
+            }
+
+        }
+
+        if (toggle)
+        {
+            controlUIPanel.SetActive(true);
+            animator.SetBool("Controls", true);
+
+            foreach (GameObject elem in menuUIElements)
+            {
+                elem.SetActive(false);
+            }
+
+        }
+    }
 
     public void QuitGame()
     {

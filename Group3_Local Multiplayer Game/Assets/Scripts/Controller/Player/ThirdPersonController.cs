@@ -84,6 +84,10 @@ public class ThirdPersonController : MonoBehaviour
     public float crouchCameraHeight = 1.0f;
     public float cameraLerpSpeed = 10f;
 
+    [Header("Crouch Safety")]
+    public LayerMask ceilingLayers;
+    public float ceilingCheckRadius = 0.25f;
+
     private bool IsCurrentDeviceMouse
     {
         get
@@ -230,17 +234,29 @@ public class ThirdPersonController : MonoBehaviour
         }
     }
 
+    private bool IsCeilingBlocked()
+    {
+        Vector3 checkPos = transform.position + Vector3.up * StandingHeight;
+
+        return Physics.CheckSphere(
+            checkPos,
+            ceilingCheckRadius,
+            ceilingLayers,
+            QueryTriggerInteraction.Ignore
+        );
+    }
+
     private void Move()
     {
-        if (_input.crouch)
+        if (_input.crouch || IsCeilingBlocked())
         {
             _controller.height = CrouchHeight;
-            _controller.center = new Vector3(0f, CrouchHeight / 2f, 0f);
+            _controller.center = new Vector3(0, CrouchHeight / 2f, 0);
         }
         else
         {
             _controller.height = StandingHeight;
-            _controller.center = new Vector3(0f, StandingHeight / 2f, 0f);
+            _controller.center = new Vector3(0, StandingHeight / 2f, 0);
         }
 
 
@@ -304,7 +320,7 @@ public class ThirdPersonController : MonoBehaviour
         {
             _animator.SetFloat(_animIDSpeed, _animationBlend);
             _animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
-            _animator.SetBool(_animIDCrouch, _input.crouch);
+            _animator.SetBool(_animIDCrouch, _input.crouch || IsCeilingBlocked());
         }
     }
 
