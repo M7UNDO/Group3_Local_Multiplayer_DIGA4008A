@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class ManageUI : MonoBehaviour
 {
-    private bool toggle;
+    public bool toggle;
 
     [Header("UI Elements")]
     [Space(5)]

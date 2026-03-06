@@ -9,7 +9,7 @@ public class AISensor : MonoBehaviour
     public float height = 1.0f;
     public Color meshColour = Color.red;
 
-    public int scanfrequency = 30;
+    public int scanFrequency = 30;
 
     public LayerMask layers;
     public LayerMask occlusionLayers;
@@ -108,10 +108,11 @@ public class AISensor : MonoBehaviour
     
     void Start()
     {
-        scanInterval = 1.0f / scanfrequency;
+        scanInterval = 1.0f / scanFrequency;
 
-        MeshFilter mf = GetComponent<MeshFilter>();
-        mf.mesh = CreateWedgeMesh();
+        //MeshFilter mf = GetComponent<MeshFilter>();
+        //mf.mesh = CreateWedgeMesh();
+        print("Mesh created");
     }
 
     // Update is called once per frame
@@ -143,35 +144,40 @@ public class AISensor : MonoBehaviour
 
     public bool IsInSight(GameObject obj)
     {
-        Vector3 origin = transform.position;
-        Vector3 dest = obj.transform.position;
+        Vector3 origin = transform.position + Vector3.up * (height * 0.5f);
+
+        Collider targetCollider = obj.GetComponent<Collider>();
+        if (targetCollider == null) return false;
+
+        Vector3 dest = targetCollider.bounds.center;
         Vector3 direction = dest - origin;
 
-        // Use absolute values and add a small tolerance
         float verticalDistance = Mathf.Abs(direction.y);
-        if (verticalDistance > height + 1f)  // Add some tolerance
+        if (verticalDistance > height)
         {
             return false;
         }
 
         direction.y = 0;
+
         float deltaAngle = Vector3.Angle(direction, transform.forward);
-        if(deltaAngle > angle)
+        if (deltaAngle > angle)
         {
             return false;
         }
 
-        if(Physics.Linecast(origin, dest, occlusionLayers))
+        if (Physics.Linecast(origin, dest, occlusionLayers))
         {
             return false;
         }
+
         return true;
     }
 
     private void OnValidate()
     {
         mesh = CreateWedgeMesh();
-        scanInterval = 1.0f / scanfrequency;
+        scanInterval = 1.0f / scanFrequency;
     }
 
     private void OnTriggerEnter(Collider other)

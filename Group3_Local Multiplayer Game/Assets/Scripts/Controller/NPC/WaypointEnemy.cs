@@ -15,11 +15,16 @@ public class WaypointEnemy : MonoBehaviour
     public float suspicionDecreaseRate = 10f;
     public float suspicionThreshold = 100f;
 
+    [Header("Detection Memory")]
+    public float loseSightDelay = 1.5f;
+    private float loseSightTimer;
+
     [Header("Alert Settings")]
     public float alertDuration = 1.5f;
     public AudioClip alertGrunt;
 
     private bool isAlerting;
+    private bool hasAlerted;
 
     [Header("Catch Settings")]
     public float catchRange = 2f;
@@ -32,14 +37,14 @@ public class WaypointEnemy : MonoBehaviour
     public float rotationSpeed = 7f;
     public float maxChaseDistance = 25f;
 
-    public AudioClip LandingAudioClip;
-    public AudioClip[] FootstepAudioClips;
-    [Range(0, 1)] public float FootstepAudioVolume = 0.5f;
-
     [Header("Idle Settings")]
     public float idleTime = 2f;
     public float lookAroundAngle = 60f;
     public float lookSpeed = 3f;
+
+    public AudioClip LandingAudioClip;
+    public AudioClip[] FootstepAudioClips;
+    [Range(0, 1)] public float FootstepAudioVolume = 0.5f;
 
     private NavMeshAgent agent;
     private Transform currentTarget;
@@ -54,6 +59,8 @@ public class WaypointEnemy : MonoBehaviour
     private bool isIdle;
     private float idleTimer;
     private Quaternion targetLookRotation;
+
+    private Vector3 lastKnownPlayerPosition;
 
     private enum State { Patrol, Suspicious, Chase, Catch, Returning }
     private State currentState;
@@ -77,7 +84,7 @@ public class WaypointEnemy : MonoBehaviour
             Debug.LogError("Waypoint group not assigned or has too few children.");
         }
 
-        currentState = State.Patrol;
+        ChangeState(State.Patrol);
         GoToNextWaypoint();
     }
 
@@ -87,6 +94,9 @@ public class WaypointEnemy : MonoBehaviour
             return;
 
         currentTarget = DetectPlayer();
+
+        if (currentTarget != null)
+            lastKnownPlayerPosition = currentTarget.position;
 
         float distanceToPlayer = currentTarget ?
             Vector3.Distance(transform.position, currentTarget.position) :
@@ -100,23 +110,23 @@ public class WaypointEnemy : MonoBehaviour
         {
             if (distanceToPlayer <= catchRange && currentState == State.Chase)
             {
-                currentState = State.Catch;
+                ChangeState(State.Catch);
             }
-            else if (suspicion >= suspicionThreshold && !isAlerting)
+            else if (suspicion >= suspicionThreshold && !hasAlerted)
             {
                 StartCoroutine(AlertBeforeChase());
             }
-            else if (suspicion > 0)
+            else if (suspicion > 0 && currentState != State.Chase)
             {
-                currentState = State.Suspicious;
+                ChangeState(State.Suspicious);
             }
             else if (distanceFromStart > maxChaseDistance)
             {
-                currentState = State.Returning;
+                ChangeState(State.Returning);
             }
-            else
+            else if (suspicion <= 0)
             {
-                currentState = State.Patrol;
+                ChangeState(State.Patrol);
             }
         }
 
@@ -143,17 +153,28 @@ public class WaypointEnemy : MonoBehaviour
                 break;
         }
 
-        animator.SetBool("isWalking", !isIdle && (currentState == State.Patrol || currentState == State.Returning));
-        animator.SetBool("isRunning", currentState == State.Chase);
-        animator.SetBool("isIdle", isIdle);
+        float speed = agent.velocity.magnitude;
+
+        bool isMoving = speed > 0.15f;
+
+        animator.SetBool("isWalking", isMoving && currentState != State.Chase);
+        animator.SetBool("isRunning", isMoving && currentState == State.Chase);
+        animator.SetBool("isIdle", !isMoving);
 
         if (!isCatching)
             RotateTowardsMovementDirection();
     }
 
+    void ChangeState(State newState)
+    {
+        if (currentState == newState) return;
+        currentState = newState;
+    }
+
     IEnumerator AlertBeforeChase()
     {
         isAlerting = true;
+        hasAlerted = true;
 
         agent.ResetPath();
 
@@ -164,7 +185,7 @@ public class WaypointEnemy : MonoBehaviour
 
         yield return new WaitForSeconds(alertDuration);
 
-        currentState = State.Chase;
+        ChangeState(State.Chase);
 
         isAlerting = false;
     }
@@ -173,8 +194,6 @@ public class WaypointEnemy : MonoBehaviour
     {
         return currentState == State.Chase;
     }
-
-    // ---------------- PLAYER DETECTION ----------------
 
     Transform DetectPlayer()
     {
@@ -198,23 +217,23 @@ public class WaypointEnemy : MonoBehaviour
         return closest;
     }
 
-    // ---------------- SUSPICION ----------------
-
     void HandleSuspicion()
     {
         if (currentTarget != null)
         {
+            loseSightTimer = loseSightDelay;
             suspicion += suspicionIncreaseRate * Time.deltaTime;
         }
         else
         {
-            suspicion -= suspicionDecreaseRate * Time.deltaTime;
+            loseSightTimer -= Time.deltaTime;
+
+            if (loseSightTimer <= 0)
+                suspicion -= suspicionDecreaseRate * Time.deltaTime;
         }
 
         suspicion = Mathf.Clamp(suspicion, 0, suspicionThreshold);
     }
-
-    // ---------------- PATROL ----------------
 
     void Patrol()
     {
@@ -253,27 +272,30 @@ public class WaypointEnemy : MonoBehaviour
         currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
     }
 
-    // ---------------- SUSPICIOUS ----------------
-
     void Suspicious()
     {
         agent.speed = walkSpeed;
+        isIdle = false;
 
         if (currentTarget != null)
         {
             agent.SetDestination(currentTarget.position);
         }
+        else
+        {
+            agent.SetDestination(lastKnownPlayerPosition);
+        }
     }
-
-    // ---------------- RETURN ----------------
 
     void ReturnToPatrol()
     {
         agent.speed = walkSpeed;
 
-        if (agent.remainingDistance < 0.5f && !agent.pathPending)
+        if (!agent.pathPending && agent.remainingDistance < 0.5f)
         {
-            currentState = State.Patrol;
+            suspicion = 0;
+            hasAlerted = false;
+            ChangeState(State.Patrol);
             GoToNextWaypoint();
         }
         else
@@ -282,17 +304,26 @@ public class WaypointEnemy : MonoBehaviour
         }
     }
 
-    // ---------------- CHASE ----------------
-
     void ChasePlayer()
     {
         agent.speed = runSpeed;
 
-        if (currentTarget && agent.isOnNavMesh)
+        if (currentTarget)
+        {
+            lastKnownPlayerPosition = currentTarget.position;
             agent.SetDestination(currentTarget.position);
-    }
+        }
+        else
+        {
+            agent.SetDestination(lastKnownPlayerPosition);
 
-    // ---------------- CAUGHT ----------------
+            if (!agent.pathPending && agent.remainingDistance < 1f)
+            {
+                suspicion = suspicionThreshold * 0.5f;
+                ChangeState(State.Suspicious);
+            }
+        }
+    }
 
     void CatchPlayer()
     {
@@ -325,8 +356,6 @@ public class WaypointEnemy : MonoBehaviour
             restartScreen.SetActive(true);
     }
 
-    // ---------------- IDLE LOOK AROUND ----------------
-
     void StartIdle()
     {
         isIdle = true;
@@ -339,8 +368,6 @@ public class WaypointEnemy : MonoBehaviour
         targetLookRotation =
             Quaternion.Euler(0, transform.eulerAngles.y + randomAngle, 0);
     }
-
-    // ---------------- ROTATION ----------------
 
     void RotateTowardsMovementDirection()
     {
@@ -364,7 +391,11 @@ public class WaypointEnemy : MonoBehaviour
             if (FootstepAudioClips.Length > 0)
             {
                 var index = Random.Range(0, FootstepAudioClips.Length);
-                AudioSource.PlayClipAtPoint(FootstepAudioClips[index], transform.position, FootstepAudioVolume);
+                AudioSource.PlayClipAtPoint(
+                    FootstepAudioClips[index],
+                    transform.position,
+                    FootstepAudioVolume
+                );
             }
         }
     }
