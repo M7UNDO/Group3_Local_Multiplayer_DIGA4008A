@@ -442,7 +442,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 9014ce0e4373a9947bc8d05e57b4b6e7, type: 3}
   - {fileID: 8300000, guid: b51c6f41ad48a0043ba1b7e2c6759ac9, type: 3}
   - {fileID: 8300000, guid: 669931cdc17e1dc4a929f1bb8111746f, type: 3}
-  FootstepAudioVolume: 0.5
+  FootstepAudioVolume: 0.2
   JumpHeight: 1
   Gravity: -15
   JumpTimeout: 0.5

@@ -26,6 +26,10 @@ public class WaypointEnemy : MonoBehaviour
     public float rotationSpeed = 7f;
     public float maxChaseDistance = 25f;
 
+    public AudioClip LandingAudioClip;
+    public AudioClip[] FootstepAudioClips;
+    [Range(0, 1)] public float FootstepAudioVolume = 0.5f;
+
     [Header("Idle Settings")]
     public float idleTime = 2f;
     public float lookAroundAngle = 60f;
@@ -321,6 +325,18 @@ public class WaypointEnemy : MonoBehaviour
                 targetRotation,
                 Time.deltaTime * rotationSpeed
             );
+        }
+    }
+
+    private void OnFootstep(AnimationEvent animationEvent)
+    {
+        if (animationEvent.animatorClipInfo.weight > 0.5f)
+        {
+            if (FootstepAudioClips.Length > 0)
+            {
+                var index = Random.Range(0, FootstepAudioClips.Length);
+                AudioSource.PlayClipAtPoint(FootstepAudioClips[index], transform.position, FootstepAudioVolume);
+            }
         }
     }
 }

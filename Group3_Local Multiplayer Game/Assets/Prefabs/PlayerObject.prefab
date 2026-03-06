@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6647508810699013902}
   - component: {fileID: 6001414203000135857}
   - component: {fileID: 3361250365454654358}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Stars
   m_TagString: FxTemporaire
   m_Icon: {fileID: 0}
@@ -4738,7 +4738,7 @@ GameObject:
   - component: {fileID: 3378844960986659980}
   - component: {fileID: 3378844960986744108}
   - component: {fileID: 5793373376614986067}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SmokeEffect
   m_TagString: FxTemporaire
   m_Icon: {fileID: 0}
@@ -9514,7 +9514,7 @@ GameObject:
   - component: {fileID: 3378844961000815054}
   - component: {fileID: 3378844960986659982}
   - component: {fileID: 3378844960986744110}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Lines
   m_TagString: FxTemporaire
   m_Icon: {fileID: 0}
@@ -14313,7 +14313,7 @@ GameObject:
   - component: {fileID: 8694079597056218579}
   - component: {fileID: 4030081479500819990}
   - component: {fileID: 2125693808364591728}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PlayerFollowCamera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14434,7 +14434,7 @@ GameObject:
   - component: {fileID: 501264969080483368}
   - component: {fileID: 4457643519115989927}
   - component: {fileID: 2026988739494584518}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: MainCamera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
@@ -14600,7 +14600,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7707785012065231552}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PlayerCameraRoot
   m_TagString: CinemachineTarget
   m_Icon: {fileID: 0}
@@ -14637,7 +14637,7 @@ GameObject:
   - component: {fileID: 3893359662872131571}
   - component: {fileID: 3095108926070387572}
   - component: {fileID: 384055996609273083}
-  m_Layer: 8
+  m_Layer: 6
   m_Name: PlayerObject
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -14707,13 +14707,16 @@ MonoBehaviour:
   SprintSpeed: 6
   RotationSmoothTime: 0.12
   SpeedChangeRate: 10
-  LandingAudioClip: {fileID: 0}
+  LandingAudioClip: {fileID: 8300000, guid: 2d2de00f80c66a7499171138ed07ed59, type: 3}
   FootstepAudioClips: []
   FootstepAudioVolume: 0.5
   JumpHeight: 1.2
   Gravity: -15
   JumpTimeout: 0.5
   FallTimeout: 0.15
+  CrouchSpeed: 1.2
+  CrouchHeight: 1
+  StandingHeight: 2
   Grounded: 1
   GroundedOffset: -0.14
   GroundedRadius: 0.28
@@ -14727,6 +14730,14 @@ MonoBehaviour:
   LockCameraPosition: 0
   _animator: {fileID: 0}
   _playerCam: {fileID: 1592567767661099372}
+  playerCameraRoot: {fileID: 7707785012065231552}
+  standingCameraHeight: 0
+  crouchCameraHeight: 1
+  cameraLerpSpeed: 10
+  ceilingLayers:
+    serializedVersion: 2
+    m_Bits: 128
+  ceilingCheckRadius: 0.25
 --- !u!114 &4028209940430217018
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14743,7 +14754,10 @@ MonoBehaviour:
   look: {x: 0, y: 0}
   jump: 0
   sprint: 0
+  crouch: 0
   stack: 0
+  grab: 0
+  balance: {x: 0, y: 0}
   analogMovement: 0
   cursorLocked: 1
   cursorInputForLook: 1
@@ -14886,8 +14900,7 @@ GameObject:
   - component: {fileID: 4933458880497286298}
   - component: {fileID: 1561273461113149711}
   - component: {fileID: 2574786849730670526}
-  - component: {fileID: 4426410469854105309}
-  m_Layer: 8
+  m_Layer: 6
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14966,29 +14979,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &4426410469854105309
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5645736177345181653}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &5585408472836815264
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15000,6 +14990,10 @@ PrefabInstance:
     - target: {fileID: 5550739022604819534, guid: a0097820dae263b4bba18584a8aa063c, type: 3}
       propertyPath: m_Name
       value: EventSystem
+      objectReference: {fileID: 0}
+    - target: {fileID: 5550739022604819534, guid: a0097820dae263b4bba18584a8aa063c, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 8530887087191074959, guid: a0097820dae263b4bba18584a8aa063c, type: 3}
       propertyPath: m_LocalPosition.x
@@ -15074,6 +15068,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1454344629529703759}
     m_Modifications:
+    - target: {fileID: 4647537709019538758, guid: 450eafd4296669042a950c91eec6e990, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 5281707188118399994, guid: 450eafd4296669042a950c91eec6e990, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -15157,6 +15155,10 @@ PrefabInstance:
     - target: {fileID: 6859445904354398571, guid: 450eafd4296669042a950c91eec6e990, type: 3}
       propertyPath: m_Name
       value: HUDCanvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 6859445904354398571, guid: 450eafd4296669042a950c91eec6e990, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 6883047872627770560, guid: 450eafd4296669042a950c91eec6e990, type: 3}
       propertyPath: m_Camera

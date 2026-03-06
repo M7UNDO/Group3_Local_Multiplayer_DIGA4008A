@@ -147,10 +147,13 @@ public class AISensor : MonoBehaviour
         Vector3 dest = obj.transform.position;
         Vector3 direction = dest - origin;
 
-        if(direction.y < 0 || direction.y > height)
+        // Use absolute values and add a small tolerance
+        float verticalDistance = Mathf.Abs(direction.y);
+        if (verticalDistance > height + 1f)  // Add some tolerance
         {
             return false;
         }
+
         direction.y = 0;
         float deltaAngle = Vector3.Angle(direction, transform.forward);
         if(deltaAngle > angle)
