@@ -106,25 +106,49 @@ public class WaypointEnemy : MonoBehaviour
 
         HandleSuspicion();
 
+        // DO NOT allow state changes while alert animation plays
+        if (isAlerting)
+        {
+            UpdateAnimator();
+            return;
+        }
+
+        void UpdateAnimator()
+        {
+            float speed = agent.velocity.magnitude;
+
+            bool isMoving = speed > 0.15f;
+
+            animator.SetBool("isWalking", isMoving && currentState != State.Chase);
+            animator.SetBool("isRunning", isMoving && currentState == State.Chase);
+            animator.SetBool("isIdle", !isMoving);
+        }
+
         if (!isCatching)
         {
             if (distanceToPlayer <= catchRange && currentState == State.Chase)
             {
                 ChangeState(State.Catch);
             }
-            else if (suspicion >= suspicionThreshold && !hasAlerted)
+            else if (suspicion >= suspicionThreshold && !hasAlerted && !isAlerting)
             {
                 StartCoroutine(AlertBeforeChase());
             }
-            else if (suspicion > 0 && currentState != State.Chase)
+            else if (currentState == State.Chase)
+            {
+                // Stay chasing unless suspicion drops very low
+                if (suspicion <= suspicionThreshold * 0.3f)
+                {
+                    ChangeState(State.Suspicious);
+                }
+            }
+
+            else if (suspicion > 0)
             {
                 ChangeState(State.Suspicious);
             }
-            else if (distanceFromStart > maxChaseDistance)
-            {
-                ChangeState(State.Returning);
-            }
-            else if (suspicion <= 0)
+
+            else
             {
                 ChangeState(State.Patrol);
             }
@@ -168,6 +192,9 @@ public class WaypointEnemy : MonoBehaviour
     void ChangeState(State newState)
     {
         if (currentState == newState) return;
+
+        isIdle = false;
+
         currentState = newState;
     }
 
@@ -233,6 +260,12 @@ public class WaypointEnemy : MonoBehaviour
         }
 
         suspicion = Mathf.Clamp(suspicion, 0, suspicionThreshold);
+
+        // IMPORTANT: reset alert if suspicion drops enough
+        if (suspicion <= suspicionThreshold * 0.25f)
+        {
+            hasAlerted = false;
+        }
     }
 
     void Patrol()
