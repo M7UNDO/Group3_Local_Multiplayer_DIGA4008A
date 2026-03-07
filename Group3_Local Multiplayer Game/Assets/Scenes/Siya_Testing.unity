@@ -21461,7 +21461,7 @@ Transform:
   m_GameObject: {fileID: 4892027819709439339}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.906345, y: -0.0000010678258, z: 2.618198}
+  m_LocalPosition: {x: -5.906345, y: 0.1, z: 2.618198}
   m_LocalScale: {x: 1.3, y: 1.3, z: 1.3}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -21500,6 +21500,9 @@ MonoBehaviour:
   runSpeed: 5
   rotationSpeed: 7
   maxChaseDistance: 25
+  walkAnimationSpeed: 1
+  runAnimationSpeed: 1
+  acceleration: 10
   idleTime: 2
   lookAroundAngle: 60
   lookSpeed: 3

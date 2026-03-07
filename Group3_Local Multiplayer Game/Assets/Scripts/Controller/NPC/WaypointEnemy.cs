@@ -37,6 +37,11 @@ public class WaypointEnemy : MonoBehaviour
     public float rotationSpeed = 7f;
     public float maxChaseDistance = 25f;
 
+    [Header("Animation Settings")]
+    public float walkAnimationSpeed = 1f; // Adjust this to match your walk animation
+    public float runAnimationSpeed = 1f;  // Adjust this to match your run animation
+    public float acceleration = 10f;      // How fast the animation blends
+
     [Header("Idle Settings")]
     public float idleTime = 2f;
     public float lookAroundAngle = 60f;
@@ -61,6 +66,8 @@ public class WaypointEnemy : MonoBehaviour
     private Quaternion targetLookRotation;
 
     private Vector3 lastKnownPlayerPosition;
+    private float currentSpeedPercent;
+    private float targetSpeedPercent;
 
     private enum State { Patrol, Suspicious, Chase, Catch, Returning }
     private State currentState;
@@ -69,6 +76,10 @@ public class WaypointEnemy : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
+
+        // Configure NavMeshAgent for smooth movement
+        agent.acceleration = 8f;
+        agent.angularSpeed = 360f;
 
         if (waypointGroup != null && waypointGroup.childCount > 1)
         {
@@ -102,28 +113,17 @@ public class WaypointEnemy : MonoBehaviour
             Vector3.Distance(transform.position, currentTarget.position) :
             Mathf.Infinity;
 
-        float distanceFromStart = Vector3.Distance(transform.position, patrolStartPoint);
-
         HandleSuspicion();
 
-        // DO NOT allow state changes while alert animation plays
         if (isAlerting)
         {
-            UpdateAnimator();
+            agent.velocity = Vector3.zero;
+            agent.isStopped = true;
+            UpdateAnimation(0f); // Idle during alert
             return;
         }
 
-        void UpdateAnimator()
-        {
-            float speed = agent.velocity.magnitude;
-
-            bool isMoving = speed > 0.15f;
-
-            animator.SetBool("isWalking", isMoving && currentState != State.Chase);
-            animator.SetBool("isRunning", isMoving && currentState == State.Chase);
-            animator.SetBool("isIdle", !isMoving);
-        }
-
+        // State management
         if (!isCatching)
         {
             if (distanceToPlayer <= catchRange && currentState == State.Chase)
@@ -134,68 +134,120 @@ public class WaypointEnemy : MonoBehaviour
             {
                 StartCoroutine(AlertBeforeChase());
             }
-            else if (currentState == State.Chase)
-            {
-                // Stay chasing unless suspicion drops very low
-                if (suspicion <= suspicionThreshold * 0.3f)
-                {
-                    ChangeState(State.Suspicious);
-                }
-            }
-
-            else if (suspicion > 0)
-            {
-                ChangeState(State.Suspicious);
-            }
-
             else
             {
-                ChangeState(State.Patrol);
+                // Determine state based on suspicion
+                State newState;
+                if (currentState == State.Chase)
+                {
+                    newState = (suspicion <= suspicionThreshold * 0.3f) ? State.Suspicious : State.Chase;
+                }
+                else if (suspicion > 0)
+                {
+                    newState = State.Suspicious;
+                }
+                else
+                {
+                    newState = State.Patrol;
+                }
+
+                if (newState != currentState)
+                    ChangeState(newState);
             }
         }
 
+        // Execute current state behavior
         switch (currentState)
         {
             case State.Patrol:
                 Patrol();
                 break;
-
             case State.Suspicious:
                 Suspicious();
                 break;
-
             case State.Chase:
                 ChasePlayer();
                 break;
-
             case State.Catch:
                 CatchPlayer();
                 break;
-
             case State.Returning:
                 ReturnToPatrol();
                 break;
         }
 
-        float speed = agent.velocity.magnitude;
+        // Calculate target speed percentage based on state
+        if (currentState == State.Chase)
+        {
+            targetSpeedPercent = 1f; // Run
+        }
+        else if (agent.velocity.magnitude > 0.1f)
+        {
+            targetSpeedPercent = 0.5f; // Walk
+        }
+        else
+        {
+            targetSpeedPercent = 0f; // Idle
+        }
 
-        bool isMoving = speed > 0.15f;
+        // Smoothly blend between speeds
+        UpdateAnimation(targetSpeedPercent);
 
-        animator.SetBool("isWalking", isMoving && currentState != State.Chase);
-        animator.SetBool("isRunning", isMoving && currentState == State.Chase);
-        animator.SetBool("isIdle", !isMoving);
-
-        if (!isCatching)
+        if (!isCatching && !isAlerting)
             RotateTowardsMovementDirection();
+    }
+
+    void UpdateAnimation(float targetSpeed)
+    {
+        // Smoothly interpolate current speed
+        currentSpeedPercent = Mathf.MoveTowards(currentSpeedPercent, targetSpeed,
+            acceleration * Time.deltaTime);
+
+        // Set the animator parameter
+        animator.SetFloat("Speed", currentSpeedPercent);
+
+        // Adjust animation speed based on movement type
+        if (currentState == State.Chase)
+        {
+            // When running, play animation at run speed
+            animator.speed = runAnimationSpeed;
+            agent.speed = runSpeed;
+        }
+        else if (agent.velocity.magnitude > 0.1f)
+        {
+            // When walking, play animation at walk speed
+            animator.speed = walkAnimationSpeed;
+            agent.speed = walkSpeed;
+        }
+        else
+        {
+            // Idle - normal animation speed
+            animator.speed = 1f;
+        }
     }
 
     void ChangeState(State newState)
     {
         if (currentState == newState) return;
 
-        isIdle = false;
+        // Debug log state changes
+        Debug.Log($"Changing state from {currentState} to {newState}");
 
+        isIdle = false;
         currentState = newState;
+
+        // Set agent settings based on state
+        switch (newState)
+        {
+            case State.Chase:
+                agent.isStopped = false;
+                break;
+            case State.Patrol:
+            case State.Suspicious:
+            case State.Returning:
+                agent.isStopped = false;
+                break;
+        }
     }
 
     IEnumerator AlertBeforeChase()
@@ -203,8 +255,15 @@ public class WaypointEnemy : MonoBehaviour
         isAlerting = true;
         hasAlerted = true;
 
+        // Stop movement
+        agent.isStopped = true;
         agent.ResetPath();
+        agent.velocity = Vector3.zero;
 
+        // Set to idle
+        UpdateAnimation(0f);
+
+        // Play alert animation
         animator.SetTrigger("Alert");
 
         if (alertGrunt != null)
@@ -212,14 +271,10 @@ public class WaypointEnemy : MonoBehaviour
 
         yield return new WaitForSeconds(alertDuration);
 
+        // Resume movement
+        agent.isStopped = false;
         ChangeState(State.Chase);
-
         isAlerting = false;
-    }
-
-    public bool IsChasing()
-    {
-        return currentState == State.Chase;
     }
 
     Transform DetectPlayer()
@@ -261,7 +316,6 @@ public class WaypointEnemy : MonoBehaviour
 
         suspicion = Mathf.Clamp(suspicion, 0, suspicionThreshold);
 
-        // IMPORTANT: reset alert if suspicion drops enough
         if (suspicion <= suspicionThreshold * 0.25f)
         {
             hasAlerted = false;
@@ -270,8 +324,6 @@ public class WaypointEnemy : MonoBehaviour
 
     void Patrol()
     {
-        agent.speed = walkSpeed;
-
         if (isIdle)
         {
             idleTimer -= Time.deltaTime;
@@ -287,7 +339,6 @@ public class WaypointEnemy : MonoBehaviour
                 isIdle = false;
                 GoToNextWaypoint();
             }
-
             return;
         }
 
@@ -300,14 +351,12 @@ public class WaypointEnemy : MonoBehaviour
     void GoToNextWaypoint()
     {
         if (waypoints == null || waypoints.Length == 0) return;
-
         agent.SetDestination(waypoints[currentWaypointIndex].position);
         currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
     }
 
     void Suspicious()
     {
-        agent.speed = walkSpeed;
         isIdle = false;
 
         if (currentTarget != null)
@@ -322,8 +371,6 @@ public class WaypointEnemy : MonoBehaviour
 
     void ReturnToPatrol()
     {
-        agent.speed = walkSpeed;
-
         if (!agent.pathPending && agent.remainingDistance < 0.5f)
         {
             suspicion = 0;
@@ -339,8 +386,6 @@ public class WaypointEnemy : MonoBehaviour
 
     void ChasePlayer()
     {
-        agent.speed = runSpeed;
-
         if (currentTarget)
         {
             lastKnownPlayerPosition = currentTarget.position;
@@ -366,6 +411,7 @@ public class WaypointEnemy : MonoBehaviour
         isCatching = true;
         gameOver = true;
 
+        agent.isStopped = true;
         agent.ResetPath();
 
         Vector3 lookPos = new Vector3(
@@ -375,7 +421,6 @@ public class WaypointEnemy : MonoBehaviour
         );
 
         transform.rotation = Quaternion.LookRotation(lookPos - transform.position);
-
         animator.SetTrigger("Attack");
 
         StartCoroutine(RestartGame());
@@ -384,7 +429,6 @@ public class WaypointEnemy : MonoBehaviour
     IEnumerator RestartGame()
     {
         yield return new WaitForSeconds(restartDelay);
-
         if (restartScreen != null)
             restartScreen.SetActive(true);
     }
@@ -393,22 +437,17 @@ public class WaypointEnemy : MonoBehaviour
     {
         isIdle = true;
         idleTimer = idleTime;
-
         agent.ResetPath();
 
         float randomAngle = Random.Range(-lookAroundAngle, lookAroundAngle);
-
-        targetLookRotation =
-            Quaternion.Euler(0, transform.eulerAngles.y + randomAngle, 0);
+        targetLookRotation = Quaternion.Euler(0, transform.eulerAngles.y + randomAngle, 0);
     }
 
     void RotateTowardsMovementDirection()
     {
         if (agent.velocity.sqrMagnitude > 0.1f)
         {
-            Quaternion targetRotation =
-                Quaternion.LookRotation(agent.velocity.normalized);
-
+            Quaternion targetRotation = Quaternion.LookRotation(agent.velocity.normalized);
             transform.rotation = Quaternion.Slerp(
                 transform.rotation,
                 targetRotation,
@@ -431,5 +470,10 @@ public class WaypointEnemy : MonoBehaviour
                 );
             }
         }
+    }
+
+    public bool IsChasing()
+    {
+        return currentState == State.Chase;
     }
 }
