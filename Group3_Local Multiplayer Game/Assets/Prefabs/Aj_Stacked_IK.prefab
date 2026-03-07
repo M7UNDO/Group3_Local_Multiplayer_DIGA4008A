@@ -452,7 +452,7 @@ MonoBehaviour:
   BottomClamp: -30
   CameraAngleOverride: 0
   LockCameraPosition: 0
-  GamepadLookSensitivity: 100
+  GamepadLookSensitivity: 90
   MouseLookSensitivity: 1
   MoveDeadzone: 0.1
   _animator: {fileID: 4933552278937563550}

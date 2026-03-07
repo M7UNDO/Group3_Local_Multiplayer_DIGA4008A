@@ -473,9 +473,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   ceilingCheckRadius: 0.25
-  pickUpLayer:
-    serializedVersion: 2
-    m_Bits: 1
 --- !u!114 &5857395204284406171
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -499,6 +496,15 @@ MonoBehaviour:
   analogMovement: 0
   cursorLocked: 1
   cursorInputForLook: 1
+  grabAction:
+    m_Name: Grab
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 2793ad2a-38a6-4899-9c6e-2078bc369e66
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
 --- !u!114 &1922488013367666304
 MonoBehaviour:
   m_ObjectHideFlags: 0

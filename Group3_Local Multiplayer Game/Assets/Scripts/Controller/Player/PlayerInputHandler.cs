@@ -31,7 +31,8 @@ public class PlayerInputHandler : MonoBehaviour
     private InputAction sprintAction;
     private InputAction crouchAction;
     private InputAction stackAction;
-    private InputAction grabAction;
+    public InputAction grabAction;
+    public InputAction GrabAction => grabAction;
     private InputAction balanceAction;
 
     private void Awake()
@@ -72,6 +73,7 @@ public class PlayerInputHandler : MonoBehaviour
         jumpAction.canceled += OnJumpCanceled;
 
         grabAction.performed += OnGrabPerformed;
+        grabAction.canceled += OnGrabCancelled;
 
         sprintAction.performed += OnSprintPerformed;
         sprintAction.canceled += OnSprintCanceled;
@@ -109,6 +111,7 @@ public class PlayerInputHandler : MonoBehaviour
         crouchAction.canceled -= OnCrouchCanceled;
 
         grabAction.performed -= OnGrabPerformed;
+        grabAction.canceled -= OnGrabCancelled;
 
         stackAction.performed -= OnStackPerformed;
 
@@ -120,7 +123,6 @@ public class PlayerInputHandler : MonoBehaviour
         BalanceInput(ctx.ReadValue<Vector2>());
     }
 
-    // NEW: Balance input method
     public void BalanceInput(Vector2 newBalanceState)
     {
         balance = newBalanceState;
@@ -150,6 +152,10 @@ public class PlayerInputHandler : MonoBehaviour
     private void OnGrabPerformed(InputAction.CallbackContext ctx)
     {
         GrabInput(true);
+    }
+    private void OnGrabCancelled(InputAction.CallbackContext ctx)
+    {
+        GrabInput(false);
     }
 
     private void OnSprintPerformed(InputAction.CallbackContext ctx)

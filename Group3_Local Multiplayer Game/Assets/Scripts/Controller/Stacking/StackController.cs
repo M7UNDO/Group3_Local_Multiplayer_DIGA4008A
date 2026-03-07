@@ -9,7 +9,6 @@ public class StackedController : MonoBehaviour
     public float SprintSpeed = 6.0f;
     public float RotationSmoothTime = 0.12f;
     public float SpeedChangeRate = 10.0f;
-
     public static bool canMove {  get; private set; } = true;
 
     public AudioClip LandingAudioClip;
@@ -81,6 +80,7 @@ public class StackedController : MonoBehaviour
     public Transform objectGrabPointTransform;
     [SerializeField] private ObjectGrabbable objectGrabbable;
     public Transform playerCameraTransform;
+    private bool pickedUp;
 
 
     private Vector2 _moveInput;
@@ -88,6 +88,7 @@ public class StackedController : MonoBehaviour
     private bool _jumpInput;
     private bool _sprintInput;
     private bool _grabInput;
+    private bool _previousGrabInput;
 
 
     public StackManager.PlayerStackInfo _bottomPlayer;
@@ -222,7 +223,7 @@ public class StackedController : MonoBehaviour
         GroundedCheck();
         Move();
         JumpAndGravity();
-        //DetectObject();
+        DetectObject();
         Grab();
     }
 
@@ -392,17 +393,23 @@ public class StackedController : MonoBehaviour
 
     private Outline currentOutline;
 
-    /*private void DetectObject()
+    private void DetectObject()
     {
-        Ray ray = playerCam.GetComponent<Camera>().ViewportPointToRay(new Vector3(0.5f, 0.5f));
-
-        if (Physics.Raycast(ray, out RaycastHit hit, pickUpDistance, pickUpLayer))
+        if (pickedUp)
         {
-            if (hit.transform.TryGetComponent(out ObjectGrabbable grabbable))
-            {
-                objectGrabbable = grabbable;
+            print("Object picked Up");
+            return;
+        }
 
-                Outline newOutline = hit.transform.GetComponent<Outline>();
+        ObjectGrabbable lookAtobject = null;
+
+        if (Physics.Raycast(playerCameraTransform.position, playerCameraTransform.forward, out RaycastHit raycastHit, pickUpDistance, pickUpLayerMask))
+        {
+            if (raycastHit.transform.TryGetComponent(out ObjectGrabbable grabbable))
+            {
+                lookAtobject = grabbable;
+
+                Outline newOutline = raycastHit.transform.GetComponent<Outline>();
 
    
                 if (currentOutline != newOutline)
@@ -420,39 +427,39 @@ public class StackedController : MonoBehaviour
             }
         }
 
-        objectGrabbable = null;
+        lookAtobject = null;
 
         if (currentOutline != null)
         {
             currentOutline.enabled = false;
             currentOutline = null;
         }
-    }*/
+    }
 
-    public void Grab()
+    private void Grab()
     {
-        if(_grabInput)
+        if (_topPlayer?.inputHandler == null) return;
+
+        if (_topPlayer.inputHandler.GrabAction.WasPressedThisFrame())
         {
             if (objectGrabbable == null)
             {
-                // Not carrying an object, try to grab
                 if (Physics.Raycast(playerCameraTransform.position, playerCameraTransform.forward, out RaycastHit raycastHit, pickUpDistance, pickUpLayerMask))
                 {
                     if (raycastHit.transform.TryGetComponent(out objectGrabbable))
                     {
                         objectGrabbable.Grab(objectGrabPointTransform);
-                        Debug.Log("Grab attempt: " + raycastHit.transform.name);
+                        pickedUp = true;
                     }
                 }
             }
             else
             {
-                // Currently carrying something, drop
+                
                 objectGrabbable.Drop();
                 objectGrabbable = null;
             }
         }
-        
     }
 
 
