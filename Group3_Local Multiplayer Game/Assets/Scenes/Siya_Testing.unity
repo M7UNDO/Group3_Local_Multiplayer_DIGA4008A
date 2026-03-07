@@ -6946,6 +6946,10 @@ PrefabInstance:
       propertyPath: playerInputManager
       value: 
       objectReference: {fileID: 1286030969}
+    - target: {fileID: 2224599272326086350, guid: f750e5b570b9b0445be56e542e560a9d, type: 3}
+      propertyPath: stackedCharacterPrefab
+      value: 
+      objectReference: {fileID: 995853267339866125, guid: 413b82fbb6fdc0640aaa980276c0faca, type: 3}
     - target: {fileID: 3811586032697232216, guid: f750e5b570b9b0445be56e542e560a9d, type: 3}
       propertyPath: animator
       value: 

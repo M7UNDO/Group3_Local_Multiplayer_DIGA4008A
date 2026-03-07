@@ -213,10 +213,20 @@ public class StackedController : MonoBehaviour
         }
     }
 
+    public void ResetPlayerMovement()
+    {
+        _moveInput = Vector2.zero;
+        _animator.SetFloat(_animIDSpeed, 0f);
+    }
+
 
     private void Update()
     {
-        if (!canMove) return;
+        if (!canMove)
+        {
+            ResetPlayerMovement();
+            return;
+        }
         GatherInputs();
 
         //movement and physics
@@ -402,6 +412,7 @@ public class StackedController : MonoBehaviour
         }
 
         ObjectGrabbable lookAtobject = null;
+
 
         if (Physics.Raycast(playerCameraTransform.position, playerCameraTransform.forward, out RaycastHit raycastHit, pickUpDistance, pickUpLayerMask))
         {

@@ -287,6 +287,18 @@ public class StackManager : MonoBehaviour
     {
         playerInputManager.splitScreen = false;
 
+        if (bottomPlayer.controller != null)
+        {
+            bottomPlayer.controller.ResetPlayerMovement(); // This will set speed to 0 and reset animator
+            bottomPlayer.controller.ResetAnimationState(); // Add this method to reset all animation params
+        }
+
+        if (topPlayer.controller != null)
+        {
+            topPlayer.controller.ResetPlayerMovement();
+            topPlayer.controller.ResetAnimationState();
+        }
+
         bottomPlayer.playerObject.GetComponent<CharacterController>().enabled = false;
         bottomPlayer.playerObject.GetComponent<ThirdPersonController>().enabled = false;
 
