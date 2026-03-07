@@ -72,6 +72,8 @@ public class WaypointEnemy : MonoBehaviour
     private enum State { Patrol, Suspicious, Chase, Catch, Returning }
     private State currentState;
 
+    public BackgroundMusicManager musicManager;
+
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -190,7 +192,6 @@ public class WaypointEnemy : MonoBehaviour
             targetSpeedPercent = 0f; // Idle
         }
 
-        // Smoothly blend between speeds
         UpdateAnimation(targetSpeedPercent);
 
         if (!isCatching && !isAlerting)
@@ -199,29 +200,29 @@ public class WaypointEnemy : MonoBehaviour
 
     void UpdateAnimation(float targetSpeed)
     {
-        // Smoothly interpolate current speed
+      
         currentSpeedPercent = Mathf.MoveTowards(currentSpeedPercent, targetSpeed,
             acceleration * Time.deltaTime);
 
-        // Set the animator parameter
+  
         animator.SetFloat("Speed", currentSpeedPercent);
 
-        // Adjust animation speed based on movement type
+       
         if (currentState == State.Chase)
         {
-            // When running, play animation at run speed
+     
             animator.speed = runAnimationSpeed;
             agent.speed = runSpeed;
         }
         else if (agent.velocity.magnitude > 0.1f)
         {
-            // When walking, play animation at walk speed
+            
             animator.speed = walkAnimationSpeed;
             agent.speed = walkSpeed;
         }
         else
         {
-            // Idle - normal animation speed
+      
             animator.speed = 1f;
         }
     }
@@ -230,22 +231,40 @@ public class WaypointEnemy : MonoBehaviour
     {
         if (currentState == newState) return;
 
-        // Debug log state changes
+      
         Debug.Log($"Changing state from {currentState} to {newState}");
 
         isIdle = false;
         currentState = newState;
 
-        // Set agent settings based on state
+
         switch (newState)
         {
             case State.Chase:
                 agent.isStopped = false;
+
+                if (musicManager != null)
+                    musicManager.EnemyStartedChase();
+
                 break;
+
             case State.Patrol:
             case State.Suspicious:
             case State.Returning:
+
                 agent.isStopped = false;
+                if (musicManager != null)
+                    musicManager.EnemyStoppedChase();
+
+                break;
+
+            case State.Catch:
+
+                agent.isStopped = true;
+
+                if (currentState == State.Chase && musicManager != null)
+                    musicManager.EnemyStoppedChase();
+
                 break;
         }
     }
@@ -255,15 +274,14 @@ public class WaypointEnemy : MonoBehaviour
         isAlerting = true;
         hasAlerted = true;
 
-        // Stop movement
+        
         agent.isStopped = true;
         agent.ResetPath();
         agent.velocity = Vector3.zero;
 
-        // Set to idle
         UpdateAnimation(0f);
 
-        // Play alert animation
+     
         animator.SetTrigger("Alert");
 
         if (alertGrunt != null)
@@ -271,7 +289,7 @@ public class WaypointEnemy : MonoBehaviour
 
         yield return new WaitForSeconds(alertDuration);
 
-        // Resume movement
+
         agent.isStopped = false;
         ChangeState(State.Chase);
         isAlerting = false;

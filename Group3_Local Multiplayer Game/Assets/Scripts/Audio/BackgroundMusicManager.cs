@@ -16,6 +16,10 @@ public class BackgroundMusicManager : MonoBehaviour
     private int currentTrackIndex = 0;
     private Coroutine fadeCoroutine;
 
+    // Chase tracking
+    private int enemiesChasing = 0;
+    private bool isSuspensePlaying = false;
+
     void Start()
     {
         if (audioSource == null)
@@ -33,7 +37,7 @@ public class BackgroundMusicManager : MonoBehaviour
 
     void Update()
     {
-        if (!audioSource.isPlaying && loopAll)
+        if (!audioSource.isPlaying && loopAll && !isSuspensePlaying)
         {
             PlayNextTrack();
         }
@@ -70,17 +74,30 @@ public class BackgroundMusicManager : MonoBehaviour
         PlayTrack(currentTrackIndex);
     }
 
-    public void PlaySpecificTrack(int index)
+    public void EnemyStartedChase()
     {
-        if (index >= 0 && index < backgroundTracks.Length)
+        enemiesChasing++;
+
+        if (!isSuspensePlaying)
         {
-            currentTrackIndex = index;
-            PlayTrack(index);
+            PlaySuspenseTrack();
+            isSuspensePlaying = true;
         }
     }
 
 
-    public void PlaySuspenseTrack()
+    public void EnemyStoppedChase()
+    {
+        enemiesChasing = Mathf.Max(0, enemiesChasing - 1);
+
+        if (enemiesChasing == 0 && isSuspensePlaying)
+        {
+            ReturnToBackgroundMusic();
+            isSuspensePlaying = false;
+        }
+    }
+
+    void PlaySuspenseTrack()
     {
         if (suspensfulTracks.Length == 0)
         {
@@ -97,7 +114,7 @@ public class BackgroundMusicManager : MonoBehaviour
         fadeCoroutine = StartCoroutine(FadeToNewTrack(suspenseClip));
     }
 
-    public void ReturnToBackgroundMusic()
+    void ReturnToBackgroundMusic()
     {
         if (backgroundTracks.Length == 0)
         {
@@ -117,7 +134,7 @@ public class BackgroundMusicManager : MonoBehaviour
     {
         float startVolume = audioSource.volume;
 
-        // Fade out
+
         while (audioSource.volume > 0)
         {
             audioSource.volume -= startVolume * Time.deltaTime / fadeDuration;
@@ -127,7 +144,7 @@ public class BackgroundMusicManager : MonoBehaviour
         audioSource.clip = newClip;
         audioSource.Play();
 
-        // Fade in
+
         while (audioSource.volume < startVolume)
         {
             audioSource.volume += startVolume * Time.deltaTime / fadeDuration;

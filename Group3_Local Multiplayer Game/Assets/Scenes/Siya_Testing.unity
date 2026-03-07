@@ -16190,7 +16190,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2012355320}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7861be0de09b88a4c95cdadb3fc49827, type: 3}
   m_Name: 
@@ -16218,7 +16218,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -21519,6 +21519,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: b51c6f41ad48a0043ba1b7e2c6759ac9, type: 3}
   - {fileID: 8300000, guid: 669931cdc17e1dc4a929f1bb8111746f, type: 3}
   FootstepAudioVolume: 0.25
+  musicManager: {fileID: 2012355323}
 --- !u!195 &5235480534035744723
 NavMeshAgent:
   m_ObjectHideFlags: 0
