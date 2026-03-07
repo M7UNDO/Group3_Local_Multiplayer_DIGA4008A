@@ -101,7 +101,7 @@ public class StackManager : MonoBehaviour
 
     public void AttemptStack(GameObject requestingPlayer, GameObject otherPlayer)
     {
-        // Check cooldown
+        // cooldown
         if (Time.time - lastOperationTime < operationCooldown)
         {
             Debug.Log("Stack on cooldown");
@@ -193,7 +193,7 @@ public class StackManager : MonoBehaviour
         stackedBottomPlayer.isTop = false;
         stackedTopPlayer.isTop = true;
 
-        // Visually hiding the mesh for the VFX 
+       
         SetMeshesActive(currentStackedCharacter, false);
 
         // Play VFX Particle, then reveal stacked character
@@ -203,7 +203,7 @@ public class StackManager : MonoBehaviour
         stackActive = true;
         stackInProgress = false;
 
-        //Debug.Log("Stack formed successfully!");
+
     }
 
     public void SetMeshesActive(GameObject obj, bool active)

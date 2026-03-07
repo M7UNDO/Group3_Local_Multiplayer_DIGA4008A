@@ -106,7 +106,7 @@ public class WaypointEnemy : MonoBehaviour
         if (gameOver || waypoints == null || waypoints.Length < 2)
             return;
 
-        currentTarget = DetectPlayer();
+            currentTarget = DetectPlayer();
 
         if (currentTarget != null)
             lastKnownPlayerPosition = currentTarget.position;

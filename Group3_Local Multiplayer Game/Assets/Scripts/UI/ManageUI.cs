@@ -34,8 +34,15 @@ public class ManageUI : MonoBehaviour
     public Button yesButton;
     public Button noButton;*/
 
+    private void Awake()
+    {
+
+       animator.updateMode = AnimatorUpdateMode.UnscaledTime;
+    }
+
     private void Start()
     {
+
 
         /*if (SceneManager.GetActiveScene().name == "MainMenu")
         {

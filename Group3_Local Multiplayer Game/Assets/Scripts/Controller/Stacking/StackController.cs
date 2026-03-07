@@ -34,6 +34,7 @@ public class StackedController : MonoBehaviour
 
     [Header("Cinemachine")]
     public GameObject CinemachineCameraTarget;
+   
     public float TopClamp = 70.0f;
     public float BottomClamp = -30.0f;
     public float CameraAngleOverride = 0.0f;
@@ -62,7 +63,7 @@ public class StackedController : MonoBehaviour
     private int _animIDFreeFall;
     private int _animIDMotionSpeed;
 
-    // Movement variables
+
     [Header("Player Movement")]
     private float _speed;
     private float _animationBlend;
@@ -71,20 +72,29 @@ public class StackedController : MonoBehaviour
     private float _verticalVelocity;
     private float _terminalVelocity = 53.0f;
 
-    // Input references
+
+    [Header("Pick Up")]
+    [SerializeField] private Outline outline;
+    private ObjectGrabbable currentObject;
+    float pickUpDistance = 10f;
+    public LayerMask pickUpLayerMask;
+    public Transform objectGrabPointTransform;
+    [SerializeField] private ObjectGrabbable objectGrabbable;
+    public Transform playerCameraTransform;
+
+
     private Vector2 _moveInput;
     private Vector2 _lookInput;
     private bool _jumpInput;
     private bool _sprintInput;
     private bool _grabInput;
 
-    // Player references for input sources
+
     public StackManager.PlayerStackInfo _bottomPlayer;
     public StackManager.PlayerStackInfo _topPlayer;
 
     private const float _threshold = 0.01f;
 
-    // Track device types
     private bool _bottomUsingMouse;
     private bool _topUsingMouse;
 
@@ -97,17 +107,11 @@ public class StackedController : MonoBehaviour
         return Vector2.zero;
     }
 
-    public bool GetGrabInput()
-    {
-        return _grabInput;
-    }
-
     public Vector3 GetCurrentVelocity()
     {
         return _controller.velocity;
     }
 
-    // Add this to expose movement direction
     public Vector3 GetMovementDirection()
     {
         return _moveInput;
@@ -186,7 +190,6 @@ public class StackedController : MonoBehaviour
         if (bottom != null)
         {
             bottom.isTop = false;
-            // Detect input device for bottom player
             if (bottom.playerInput != null)
             {
                 _bottomUsingMouse = bottom.playerInput.currentControlScheme == "KeyboardMouse";
@@ -196,7 +199,6 @@ public class StackedController : MonoBehaviour
         if (top != null)
         {
             top.isTop = true;
-            // Detect input device for top player
             if (top.playerInput != null)
             {
                 _topUsingMouse = top.playerInput.currentControlScheme == "KeyboardMouse";
@@ -208,35 +210,24 @@ public class StackedController : MonoBehaviour
         {
             spineBalance.SetPlayers(bottom, top);
         }
-
-        //Debug.Log($"StackedController initialized: Bottom Player {bottom?.playerIndex} (Using Mouse: {_bottomUsingMouse}), Top Player {top?.playerIndex} (Using Mouse: {_topUsingMouse})");
     }
 
-    public void ResetPlayerMovement()
-    {
-        _moveInput = Vector2.zero;
-        _animator.SetFloat(_animIDSpeed, 0f);   
-    }
 
     private void Update()
     {
-        if (PauseScript.IsGamePaused || !canMove)
-        {
-            ResetPlayerMovement();
-            return;
-        }
+        if (!canMove) return;
         GatherInputs();
 
-        // Handles movement and physics
+        //movement and physics
         GroundedCheck();
         Move();
         JumpAndGravity();
+        //DetectObject();
+        Grab();
     }
 
     private void LateUpdate()
     {
-        if (PauseScript.IsGamePaused) return;
-
         if (!canMove) return;
         CameraRotation();
     }
@@ -265,13 +256,13 @@ public class StackedController : MonoBehaviour
             else
                 bottomMove = rawMove;
 
-            // Look
+            /* Look
             Vector2 rawLook = _bottomPlayer.inputHandler.look;
 
             if (!_bottomUsingMouse && rawLook.magnitude < MoveDeadzone)
                 bottomLook = Vector2.zero;
             else
-                bottomLook = rawLook;
+                bottomLook = rawLook;*/
 
             _sprintInput = _bottomPlayer.inputHandler.sprint;
             _jumpInput = _bottomPlayer.inputHandler.jump;
@@ -305,13 +296,13 @@ public class StackedController : MonoBehaviour
 
         Vector2 combinedLook = bottomLook + topLook;
 
-        // Scale mouse vs controller differently
+
         bool anyMouse = _topUsingMouse || _bottomUsingMouse;
 
         if (anyMouse)
-            combinedLook *= MouseLookSensitivity;              // raw mouse movement
+            combinedLook *= MouseLookSensitivity;       
         else
-            combinedLook *= GamepadLookSensitivity * Time.deltaTime; // analog stick movement
+            combinedLook *= GamepadLookSensitivity * Time.deltaTime; 
 
         _lookInput = combinedLook;
 
@@ -398,6 +389,73 @@ public class StackedController : MonoBehaviour
             _animator.SetBool(_animIDGrounded, Grounded);
         }
     }
+
+    private Outline currentOutline;
+
+    /*private void DetectObject()
+    {
+        Ray ray = playerCam.GetComponent<Camera>().ViewportPointToRay(new Vector3(0.5f, 0.5f));
+
+        if (Physics.Raycast(ray, out RaycastHit hit, pickUpDistance, pickUpLayer))
+        {
+            if (hit.transform.TryGetComponent(out ObjectGrabbable grabbable))
+            {
+                objectGrabbable = grabbable;
+
+                Outline newOutline = hit.transform.GetComponent<Outline>();
+
+   
+                if (currentOutline != newOutline)
+                {
+
+                    if (currentOutline != null)
+                        currentOutline.enabled = false;
+
+
+                    currentOutline = newOutline;
+                    currentOutline.enabled = true;
+                }
+
+                return;
+            }
+        }
+
+        objectGrabbable = null;
+
+        if (currentOutline != null)
+        {
+            currentOutline.enabled = false;
+            currentOutline = null;
+        }
+    }*/
+
+    public void Grab()
+    {
+        if(_grabInput)
+        {
+            if (objectGrabbable == null)
+            {
+                // Not carrying an object, try to grab
+                if (Physics.Raycast(playerCameraTransform.position, playerCameraTransform.forward, out RaycastHit raycastHit, pickUpDistance, pickUpLayerMask))
+                {
+                    if (raycastHit.transform.TryGetComponent(out objectGrabbable))
+                    {
+                        objectGrabbable.Grab(objectGrabPointTransform);
+                        Debug.Log("Grab attempt: " + raycastHit.transform.name);
+                    }
+                }
+            }
+            else
+            {
+                // Currently carrying something, drop
+                objectGrabbable.Drop();
+                objectGrabbable = null;
+            }
+        }
+        
+    }
+
+
 
 
 
@@ -492,14 +550,13 @@ public class StackedController : MonoBehaviour
             _cinemachineTargetPitch += _lookInput.y * deltaTimeMultiplier;
         }
 
-        // Clamp the pitch angle
+
         _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
 
-        // Yaw can rotate fully (no clamp needed, but ensure it stays within reasonable range)
+
         if (_cinemachineTargetYaw < -360f) _cinemachineTargetYaw += 360f;
         if (_cinemachineTargetYaw > 360f) _cinemachineTargetYaw -= 360f;
 
-        // Apply rotation to camera target
         CinemachineCameraTarget.transform.rotation = Quaternion.Euler(
             _cinemachineTargetPitch + CameraAngleOverride,
             _cinemachineTargetYaw,

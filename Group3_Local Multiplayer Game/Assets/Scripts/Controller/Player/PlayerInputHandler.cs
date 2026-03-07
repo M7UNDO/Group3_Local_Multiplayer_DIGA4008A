@@ -34,7 +34,6 @@ public class PlayerInputHandler : MonoBehaviour
     private InputAction grabAction;
     private InputAction balanceAction;
 
-
     private void Awake()
     {
         PlayerInput playerInput = GetComponent<PlayerInput>();
@@ -73,7 +72,6 @@ public class PlayerInputHandler : MonoBehaviour
         jumpAction.canceled += OnJumpCanceled;
 
         grabAction.performed += OnGrabPerformed;
-        grabAction.canceled += OnGrabCanceled;
 
         sprintAction.performed += OnSprintPerformed;
         sprintAction.canceled += OnSprintCanceled;
@@ -111,7 +109,6 @@ public class PlayerInputHandler : MonoBehaviour
         crouchAction.canceled -= OnCrouchCanceled;
 
         grabAction.performed -= OnGrabPerformed;
-        grabAction.canceled -= OnGrabCanceled;
 
         stackAction.performed -= OnStackPerformed;
 
@@ -148,11 +145,6 @@ public class PlayerInputHandler : MonoBehaviour
     private void OnJumpCanceled(InputAction.CallbackContext ctx)
     {
         JumpInput(false);
-    }
-
-    private void OnGrabCanceled(InputAction.CallbackContext ctx)
-    {
-        GrabInput(false);
     }
 
     private void OnGrabPerformed(InputAction.CallbackContext ctx)
@@ -233,6 +225,8 @@ public class PlayerInputHandler : MonoBehaviour
     {
         grab = newGrabState;
     }
+
+
 
     public void SprintInput(bool newSprintState)
     {

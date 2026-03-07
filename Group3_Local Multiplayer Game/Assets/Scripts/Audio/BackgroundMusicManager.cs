@@ -27,6 +27,17 @@ public class BackgroundMusicManager : MonoBehaviour
 
         if (backgroundTracks.Length > 0)
         {
+            if (playRandomly)
+            {
+                currentTrackIndex = Random.Range(0, backgroundTracks.Length);
+                print("Playing random song!");
+            }
+            else
+            {
+                currentTrackIndex = 0;
+                print("Playing first song!");
+            }
+
             PlayTrack(currentTrackIndex);
         }
         else

@@ -443,6 +443,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: b51c6f41ad48a0043ba1b7e2c6759ac9, type: 3}
   - {fileID: 8300000, guid: 669931cdc17e1dc4a929f1bb8111746f, type: 3}
   FootstepAudioVolume: 0.2
+  jumpSFX: {fileID: 8300000, guid: 68cd6da069a96f9479edf2b41035fb79, type: 3}
   JumpHeight: 1
   Gravity: -15
   JumpTimeout: 0.5
@@ -462,6 +463,7 @@ MonoBehaviour:
   CameraAngleOverride: 0
   LockCameraPosition: 0
   _animator: {fileID: 5461503311798659565}
+  _mainCameraTransform: {fileID: 147843804000425514}
   _playerCam: {fileID: 1178402540377742826}
   playerCameraRoot: {fileID: 4257132492701310634}
   standingCameraHeight: 0
@@ -471,6 +473,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   ceilingCheckRadius: 0.25
+  pickUpLayer:
+    serializedVersion: 2
+    m_Bits: 1
 --- !u!114 &5857395204284406171
 MonoBehaviour:
   m_ObjectHideFlags: 0

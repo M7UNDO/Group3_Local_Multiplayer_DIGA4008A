@@ -70,8 +70,10 @@ public class PlayerManager : MonoBehaviour
 
         AudioListener listener = playerTransform.GetComponentInChildren<AudioListener>();
         if (listener != null)
-            listener.enabled = players.Count == 1;
-
+        {
+            int index = player.playerIndex;
+            listener.enabled = (index == 0 || index == 2);
+        }
 
         if (stackManager != null)
         {

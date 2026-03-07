@@ -14,6 +14,7 @@ public class ThirdPersonController : MonoBehaviour
     public AudioClip LandingAudioClip;
     public AudioClip[] FootstepAudioClips;
     [Range(0, 1)] public float FootstepAudioVolume = 0.5f;
+    public AudioClip jumpSFX;
 
     [Space(10)]
     public float JumpHeight = 1.2f;
@@ -71,6 +72,7 @@ public class ThirdPersonController : MonoBehaviour
     private CharacterController _controller;
     private PlayerInputHandler _input;
     private GameObject _mainCamera;
+    public Transform _mainCameraTransform;
 
     [SerializeField] Camera _playerCam;
 
@@ -87,6 +89,8 @@ public class ThirdPersonController : MonoBehaviour
     [Header("Crouch Safety")]
     public LayerMask ceilingLayers;
     public float ceilingCheckRadius = 0.25f;
+
+    
 
     private bool IsCurrentDeviceMouse
     {
@@ -144,20 +148,9 @@ public class ThirdPersonController : MonoBehaviour
         canMove = isAbleToMove;
     }
 
-    public void ResetPlayerMovement()
-    {
-        _input.move = Vector2.zero;
-        _animator.SetFloat(_animIDSpeed, 0f);
-    }
-
     private void Update()
     {
-        if (PauseScript.IsGamePaused || !canMove)
-        {
-            ResetPlayerMovement();
-            return;
-        }
-
+        if (!canMove) return;
         _hasAnimator = TryGetComponent(out _animator);
 
         JumpAndGravity();
@@ -168,8 +161,6 @@ public class ThirdPersonController : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (PauseScript.IsGamePaused) return;
-
         if (!canMove) return;
         CameraRotation();
     }
@@ -233,6 +224,8 @@ public class ThirdPersonController : MonoBehaviour
             Debug.LogWarning("No camera found on player to switch on.");
         }
     }
+
+    
 
     private bool IsCeilingBlocked()
     {
@@ -345,7 +338,10 @@ public class ThirdPersonController : MonoBehaviour
 
             if (_input.jump && _jumpTimeoutDelta <= 0.0f)
             {
-
+                if(jumpSFX!= null)
+                {
+                    AudioSource.PlayClipAtPoint(jumpSFX, transform.TransformPoint(_controller.center), FootstepAudioVolume);
+                }
                 _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
 
                 if (_hasAnimator)

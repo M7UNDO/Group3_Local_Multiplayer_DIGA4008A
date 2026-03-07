@@ -211,7 +211,7 @@ public class SpineBalanceController : MonoBehaviour
         else if (localAcceleration.z < -0.1f)
         {
             accelerationTilt += -localAcceleration.z * decelerationTiltMultiplier; 
-            Debug.Log($"Decelerating! Lean forward: {accelerationTilt}");
+            //Debug.Log($"Decelerating! Lean forward: {accelerationTilt}");
         }
 
 
@@ -219,7 +219,7 @@ public class SpineBalanceController : MonoBehaviour
         {
             // Sudden stop - lurch forward
             accelerationTilt += 5f;
-            Debug.Log("Sudden stop! Lurching forward!");
+            //Debug.Log("Sudden stop! Lurching forward!");
         }
 
         float totalMovementTilt = inputTilt + momentumFromVelocity + accelerationTilt;
@@ -246,7 +246,7 @@ public class SpineBalanceController : MonoBehaviour
  
         if (Mathf.Abs(accelerationTilt) > 1f || Mathf.Abs(momentumFromVelocity) > 1f)
         {
-            Debug.Log($"Tilt Sources - Input: {inputTilt:F1}, Momentum: {momentumFromVelocity:F1}, Acceleration: {accelerationTilt:F1}, Total: {totalMovementTilt:F1}");
+            //Debug.Log($"Tilt Sources - Input: {inputTilt:F1}, Momentum: {momentumFromVelocity:F1}, Acceleration: {accelerationTilt:F1}, Total: {totalMovementTilt:F1}");
         }
     }
 
@@ -299,7 +299,7 @@ public class SpineBalanceController : MonoBehaviour
 
     private void ExitCriticalZone()
     {
-        Debug.Log("EXITING CRITICAL BALANCE ZONE!");
+        //Debug.Log("EXITING CRITICAL BALANCE ZONE!");
         OnExitCriticalZone?.Invoke();
     }
 
@@ -308,7 +308,7 @@ public class SpineBalanceController : MonoBehaviour
         if (isUnstacking || !unstackOnFail) return;
 
         isUnstacking = true;
-        Debug.Log("Woahh Falling");
+        //Debug.Log("Woahh Falling");
 
         OnUnstackStarted?.Invoke();
 

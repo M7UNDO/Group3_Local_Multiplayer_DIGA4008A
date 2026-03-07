@@ -58,11 +58,13 @@ public class PauseScript : MonoBehaviour
 
         if (toggle)
         {
+            Time.timeScale = 0;
             pausePanel.SetActive(true);
             IsGamePaused = true;
         }
         else
         {
+            Time.timeScale = 1;
             pausePanel.SetActive(false);
             IsGamePaused = false;
         }
