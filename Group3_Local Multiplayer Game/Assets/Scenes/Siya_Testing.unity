@@ -938,7 +938,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &522696930
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -963,12 +963,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 522696929}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1009.1986, y: 526.52313, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 780.85, y: 404.9409, z: -2.0139985}
+  m_LocalScale: {x: 0.7692308, y: 0.7692308, z: 0.7692308}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 5235480534035744721}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &542222403
 GameObject:
@@ -1253,12 +1253,14 @@ MonoBehaviour:
   animator: {fileID: 9084325872796480483}
   controlUIPanel: {fileID: 6168784242219754018}
   settingsPanel: {fileID: 611564569}
+  restartScreen: {fileID: 1036960374}
   hasMenuElements: 1
   menuUIElements:
   - {fileID: 8182360277760183471}
   mainMenuFirstSelected: {fileID: 7231717056087843382}
   controlsFirstSelected: {fileID: 431853145}
   settingsFirstSelected: {fileID: 1031758350}
+  restartFirstSelected: {fileID: 1377705003}
 --- !u!1 &692235070
 GameObject:
   m_ObjectHideFlags: 0
@@ -1453,9 +1455,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: ManageUI, Assembly-CSharp
-        m_MethodName: SettingsPanel
+      - m_Target: {fileID: 676897467}
+        m_TargetAssemblyTypeName: MainUI, Assembly-CSharp
+        m_MethodName: QuitGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3043,7 +3045,7 @@ GameObject:
   - component: {fileID: 1377705006}
   - component: {fileID: 1377705005}
   m_Layer: 5
-  m_Name: ControlsBtn
+  m_Name: RestartBtn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3222,9 +3224,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: ManageUI, Assembly-CSharp
-        m_MethodName: ControlPanel
+      - m_Target: {fileID: 676897467}
+        m_TargetAssemblyTypeName: MainUI, Assembly-CSharp
+        m_MethodName: ResetGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -7494,13 +7496,14 @@ GameObject:
   - component: {fileID: 5235480534035744724}
   - component: {fileID: 5235480534035744723}
   - component: {fileID: 5235480534035744722}
+  - component: {fileID: 5235480534035744725}
   m_Layer: 0
   m_Name: The Boss
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &4900372391720965470
 Transform:
   m_ObjectHideFlags: 0
@@ -7625,6 +7628,7 @@ Transform:
   - {fileID: 4302644711711088306}
   - {fileID: 1459257053}
   - {fileID: 642466870}
+  - {fileID: 522696931}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5235480534035744722
@@ -7642,16 +7646,15 @@ MonoBehaviour:
   animator: {fileID: 2181999629071130027}
   waypointGroup: {fileID: 924898347}
   sensor: {fileID: 1459257051}
+  mainUI: {fileID: 0}
   suspicion: 0
-  suspicionIncreaseRate: 50
-  suspicionDecreaseRate: 10
+  suspicionIncreaseRate: 80
+  suspicionDecreaseRate: 20
   suspicionThreshold: 100
-  loseSightDelay: 1.5
+  loseSightDelay: 3
   alertDuration: 1.5
-  alertGrunt: {fileID: 8300000, guid: 7bd91cfcbd1f8ee44b11716386a78e1b, type: 3}
   catchRange: 2
   restartDelay: 2
-  restartScreen: {fileID: 1036960374}
   walkSpeed: 2
   runSpeed: 5
   rotationSpeed: 7
@@ -7662,7 +7665,7 @@ MonoBehaviour:
   idleTime: 2
   lookAroundAngle: 60
   lookSpeed: 3
-  LandingAudioClip: {fileID: 0}
+  alertSFX: {fileID: 5235480534035744725}
   FootstepAudioClips:
   - {fileID: 8300000, guid: 872e1ca52dffd4747890648c77157a08, type: 3}
   - {fileID: 8300000, guid: bc9fd638708451c4591f276338dfd303, type: 3}
@@ -7721,6 +7724,103 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!82 &5235480534035744725
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4892027819709439339}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: 7bd91cfcbd1f8ee44b11716386a78e1b, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!4 &5304609218061754145
 Transform:
   m_ObjectHideFlags: 0
@@ -9564,7 +9664,6 @@ SceneRoots:
   - {fileID: 924898347}
   - {fileID: 5235480534035744721}
   - {fileID: 1605147798}
-  - {fileID: 522696931}
   - {fileID: 412961436}
   - {fileID: 66447518}
   - {fileID: 777880555}
