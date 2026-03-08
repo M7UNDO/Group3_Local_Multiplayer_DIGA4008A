@@ -13,9 +13,11 @@ namespace View
 
         public Color selectedTabColour;
         public Color deselectedTabColour;
+        public Color hoverTabColour;
 
-        public Color selectedIconColour;
-        public Color deselectedIconColour;
+        public Color selectedTextIcon;
+        public Color deselectedTextIcon;
+        public Color hoverTextIcon;
 
         [Header("Tab Settings")]
         [Space(5)]
@@ -23,6 +25,8 @@ namespace View
         public bool hasTextIcon;
         public bool buttonFill;
         public bool startWithActiveTab;
+
+        int currentTab = -1;
 
         void Start()
         {
@@ -34,31 +38,68 @@ namespace View
 
         public void ActivateTab(int tabNo)
         {
+            currentTab = tabNo;
+
             for (int i = 0; i < pages.Length; i++)
             {
                 pages[i].SetActive(false);
                 tabButtons[i].color = deselectedTabColour;
+
                 if (buttonFill)
                     tabButtons[i].fillCenter = false;
+
                 if (hasTextComponent)
                     tabButtons[i].gameObject.GetComponentInChildren<TextMeshProUGUI>().color =
-                        deselectedIconColour;
+                        deselectedTextIcon;
 
                 if (hasTextIcon)
                     tabButtons[i].gameObject.transform.GetChild(0).GetComponent<Image>().color =
-                        deselectedIconColour;
+                        deselectedTextIcon;
             }
 
             pages[tabNo].SetActive(true);
             tabButtons[tabNo].color = selectedTabColour;
+
             if (buttonFill)
                 tabButtons[tabNo].fillCenter = true;
+
             if (hasTextComponent)
                 tabButtons[tabNo].gameObject.GetComponentInChildren<TextMeshProUGUI>().color =
-                    selectedIconColour;
+                    selectedTextIcon;
+
             if (hasTextIcon)
                 tabButtons[tabNo].gameObject.transform.GetChild(0).GetComponent<Image>().color =
-                    selectedIconColour;
+                    selectedTextIcon;
+        }
+
+        public void OnTabHover(int tabNo)
+        {
+            if (tabNo == currentTab) return;
+
+            //tabButtons[tabNo].color = hoverTabColour;
+
+            if (hasTextComponent)
+                tabButtons[tabNo].gameObject.GetComponentInChildren<TextMeshProUGUI>().color =
+                    hoverTextIcon;
+
+            if (hasTextIcon)
+                tabButtons[tabNo].gameObject.transform.GetChild(0).GetComponent<Image>().color =
+                    hoverTextIcon;
+        }
+
+        public void OnTabExit(int tabNo)
+        {
+            if (tabNo == currentTab) return;
+
+            //tabButtons[tabNo].color = deselectedTabColour;
+
+            if (hasTextComponent)
+                tabButtons[tabNo].gameObject.GetComponentInChildren<TextMeshProUGUI>().color =
+                    deselectedTextIcon;
+
+            if (hasTextIcon)
+                tabButtons[tabNo].gameObject.transform.GetChild(0).GetComponent<Image>().color =
+                    deselectedTextIcon;
         }
     }
 }

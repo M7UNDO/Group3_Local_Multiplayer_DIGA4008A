@@ -2,6 +2,7 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class ManageUI : MonoBehaviour
@@ -15,6 +16,23 @@ public class ManageUI : MonoBehaviour
     public GameObject settingsPanel;
     public bool hasMenuElements;
     public GameObject[] menuUIElements;
+
+    [Header("UI Navigation")]
+    public GameObject mainMenuFirstSelected;
+    public GameObject controlsFirstSelected;
+    public GameObject settingsFirstSelected;
+
+    private void SetSelected(GameObject obj)
+    {
+        StartCoroutine(SetSelectedNextFrame(obj));
+    }
+
+    private IEnumerator SetSelectedNextFrame(GameObject obj)
+    {
+        yield return null;
+        EventSystem.current.SetSelectedGameObject(null);
+        EventSystem.current.SetSelectedGameObject(obj);
+    }
     /*
     [Header("Saving states")]
     [Space(5)]
@@ -146,16 +164,21 @@ public class ManageUI : MonoBehaviour
                     elem.SetActive(true);
                 }
             }
+
+            SetSelected(mainMenuFirstSelected);
         }
 
         if (toggle)
         {
             settingsPanel.SetActive(true);
             animator.SetBool("Controls", true);
+
             foreach (GameObject elem in menuUIElements)
             {
                 elem.SetActive(false);
             }
+
+            SetSelected(settingsFirstSelected);
         }
     }
 
@@ -173,10 +196,10 @@ public class ManageUI : MonoBehaviour
                 foreach (GameObject elem in menuUIElements)
                 {
                     elem.SetActive(true);
-
                 }
             }
 
+            SetSelected(mainMenuFirstSelected);
         }
 
         if (toggle)
@@ -189,6 +212,7 @@ public class ManageUI : MonoBehaviour
                 elem.SetActive(false);
             }
 
+            SetSelected(controlsFirstSelected);
         }
     }
 
