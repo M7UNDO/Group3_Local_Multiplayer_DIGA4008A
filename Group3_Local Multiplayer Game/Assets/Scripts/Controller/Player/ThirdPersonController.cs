@@ -27,6 +27,7 @@ public class ThirdPersonController : MonoBehaviour
     public float CrouchSpeed = 1.2f;
     public float CrouchHeight = 1.0f;
     public float StandingHeight = 2.0f;
+    private bool crouchToggle;
 
     [Header("Player Grounded")]
     public bool Grounded = true;
@@ -132,7 +133,7 @@ public class ThirdPersonController : MonoBehaviour
 
     private void HandleCameraHeight()
     {
-        float targetHeight = _input.crouch ? crouchCameraHeight : standingCameraHeight;
+        float targetHeight = crouchToggle ? crouchCameraHeight : standingCameraHeight;
 
         Vector3 pos = playerCameraRoot.localPosition;
         pos.y = Mathf.Lerp(pos.y, targetHeight, Time.deltaTime * cameraLerpSpeed);
@@ -186,6 +187,17 @@ public class ThirdPersonController : MonoBehaviour
         Debug.Log($"ResetPlayerMovement called on {gameObject.name}");
     }
 
+    private void HandleCrouchInput()
+    {
+        if (_input.crouch)
+        {
+            crouchToggle = !crouchToggle;
+
+            // consume the input so it doesn't toggle every frame
+            _input.crouch = false;
+        }
+    }
+
 
 
     private void Update()
@@ -198,6 +210,7 @@ public class ThirdPersonController : MonoBehaviour
 
         _hasAnimator = TryGetComponent(out _animator);
 
+        HandleCrouchInput();
         JumpAndGravity();
         GroundedCheck();
         Move();
@@ -286,7 +299,7 @@ public class ThirdPersonController : MonoBehaviour
 
     private void Move()
     {
-        if (_input.crouch || IsCeilingBlocked())
+        if (crouchToggle || IsCeilingBlocked())
         {
             _controller.height = CrouchHeight;
             _controller.center = new Vector3(0, CrouchHeight / 2f, 0);
@@ -300,7 +313,7 @@ public class ThirdPersonController : MonoBehaviour
 
         float targetSpeed = MoveSpeed;
 
-        if (_input.crouch)
+        if (crouchToggle)
             targetSpeed = CrouchSpeed;
         else if (_input.sprint)
             targetSpeed = SprintSpeed;
@@ -358,7 +371,7 @@ public class ThirdPersonController : MonoBehaviour
         {
             _animator.SetFloat(_animIDSpeed, _animationBlend);
             _animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
-            _animator.SetBool(_animIDCrouch, _input.crouch || IsCeilingBlocked());
+            _animator.SetBool(_animIDCrouch, crouchToggle || IsCeilingBlocked());
         }
     }
 
