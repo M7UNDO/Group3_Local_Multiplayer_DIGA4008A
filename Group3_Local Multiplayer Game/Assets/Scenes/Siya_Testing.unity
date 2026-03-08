@@ -1457,8 +1457,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 676897467}
         m_TargetAssemblyTypeName: MainUI, Assembly-CSharp
-        m_MethodName: QuitGame
-        m_Mode: 1
+        m_MethodName: LoadLevelNumber
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -3621,6 +3621,7 @@ MonoBehaviour:
   suspensfulTracks:
   - {fileID: 8300000, guid: 45fbee2c1ff92b3429ffa0f607d266f5, type: 3}
   - {fileID: 8300000, guid: 94b80399dadabf14d9b05dc683f36a99, type: 3}
+  missionFailedSFX: {fileID: 8300000, guid: cc98f76d98277484aab80f510ef653c8, type: 3}
   playRandomly: 1
   loopAll: 1
   fadeDuration: 2

@@ -463,7 +463,12 @@ public class WaypointEnemy : MonoBehaviour
         transform.rotation = Quaternion.LookRotation(lookPos - transform.position);
         currentTarget.gameObject.GetComponentInChildren<CinemachineThirdPersonFollow>().AvoidObstacles.Enabled = false;
         ThirdPersonController.SetMovement(false);
+
         animator.SetTrigger("Attack");
+        if (musicManager != null && musicManager.missionFailedSFX != null)
+        {
+            musicManager.PlayCaughtBackgroundMusic();
+        }
 
         StartCoroutine(RestartGame());
     }
