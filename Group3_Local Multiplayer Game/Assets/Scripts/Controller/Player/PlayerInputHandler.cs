@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SocialPlatforms;
 
 public class PlayerInputHandler : MonoBehaviour
 {
@@ -38,6 +39,10 @@ public class PlayerInputHandler : MonoBehaviour
     public InputAction InteractAction => interactAction;
     private InputAction balanceAction;
 
+
+    //Title: Local Multiplayer and Split-Screen - New Input and Cinemachine
+    //Author: One Wheel Studio
+    //Availability: One Wheel Studio (2022) Local Multiplayer and Split-Screen - new input and Cinemachine. https://www.youtube.com/watch?v=l9HrraxtdGY.
     private void Awake()
     {
         PlayerInput playerInput = GetComponent<PlayerInput>();

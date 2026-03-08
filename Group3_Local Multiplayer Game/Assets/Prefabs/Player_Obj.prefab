@@ -443,7 +443,6 @@ MonoBehaviour:
   - {fileID: 8300000, guid: b51c6f41ad48a0043ba1b7e2c6759ac9, type: 3}
   - {fileID: 8300000, guid: 669931cdc17e1dc4a929f1bb8111746f, type: 3}
   FootstepAudioVolume: 0.2
-  jumpSFX: {fileID: 8300000, guid: 68cd6da069a96f9479edf2b41035fb79, type: 3}
   JumpHeight: 1
   Gravity: -15
   JumpTimeout: 0.5
@@ -463,7 +462,6 @@ MonoBehaviour:
   CameraAngleOverride: 0
   LockCameraPosition: 0
   _animator: {fileID: 5461503311798659565}
-  _mainCameraTransform: {fileID: 147843804000425514}
   _playerCam: {fileID: 1178402540377742826}
   playerCameraRoot: {fileID: 4257132492701310634}
   standingCameraHeight: 0
@@ -492,6 +490,7 @@ MonoBehaviour:
   crouch: 0
   stack: 0
   grab: 0
+  interact: 0
   balance: {x: 0, y: 0}
   analogMovement: 0
   cursorLocked: 1
@@ -501,6 +500,15 @@ MonoBehaviour:
     m_Type: 0
     m_ExpectedControlType: 
     m_Id: 2793ad2a-38a6-4899-9c6e-2078bc369e66
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  interactAction:
+    m_Name: Interact
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: e740cd3d-afd9-4081-93f7-352b29dacc42
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings: []

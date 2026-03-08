@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
+using Unity.Cinemachine;
 
 public class WaypointEnemy : MonoBehaviour
 {
@@ -8,6 +9,7 @@ public class WaypointEnemy : MonoBehaviour
     public Animator animator;
     public Transform waypointGroup;
     public AISensor sensor;
+    public MainUI mainUI;
 
     [Header("Suspicion System")]
     public float suspicion = 0f;
@@ -21,7 +23,6 @@ public class WaypointEnemy : MonoBehaviour
 
     [Header("Alert Settings")]
     public float alertDuration = 1.5f;
-    public AudioClip alertGrunt;
 
     private bool isAlerting;
     private bool hasAlerted;
@@ -29,7 +30,6 @@ public class WaypointEnemy : MonoBehaviour
     [Header("Catch Settings")]
     public float catchRange = 2f;
     public float restartDelay = 2f;
-    public GameObject restartScreen;
 
     [Header("Movement Settings")]
     public float walkSpeed = 2f;
@@ -38,16 +38,16 @@ public class WaypointEnemy : MonoBehaviour
     public float maxChaseDistance = 25f;
 
     [Header("Animation Settings")]
-    public float walkAnimationSpeed = 1f; // Adjust this to match your walk animation
-    public float runAnimationSpeed = 1f;  // Adjust this to match your run animation
-    public float acceleration = 10f;      // How fast the animation blends
+    public float walkAnimationSpeed = 1f;
+    public float runAnimationSpeed = 1f;  
+    public float acceleration = 10f;      
 
     [Header("Idle Settings")]
     public float idleTime = 2f;
     public float lookAroundAngle = 60f;
     public float lookSpeed = 3f;
 
-    public AudioClip LandingAudioClip;
+    public AudioSource alertSFX;
     public AudioClip[] FootstepAudioClips;
     [Range(0, 1)] public float FootstepAudioVolume = 0.5f;
 
@@ -78,12 +78,13 @@ public class WaypointEnemy : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
+        mainUI = GameObject.FindAnyObjectByType<MainUI>();
 
-        // Configure NavMeshAgent for smooth movement
         agent.acceleration = 8f;
         agent.angularSpeed = 360f;
 
-        if (waypointGroup != null && waypointGroup.childCount > 1)
+        // Setup waypoints only if they exist
+        if (waypointGroup != null && waypointGroup.childCount > 0)
         {
             waypoints = new Transform[waypointGroup.childCount];
 
@@ -94,22 +95,49 @@ public class WaypointEnemy : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Waypoint group not assigned or has too few children.");
+            waypoints = null; // This NPC will be stationary
         }
 
         ChangeState(State.Patrol);
-        GoToNextWaypoint();
+
+        // Only start patrolling if waypoints exist
+        if (waypoints != null && waypoints.Length > 0)
+        {
+            GoToNextWaypoint();
+        }
     }
 
     void Update()
     {
-        if (gameOver || waypoints == null || waypoints.Length < 2)
+        if (gameOver)
             return;
 
-            currentTarget = DetectPlayer();
+        if (currentState != State.Returning && currentState != State.Catch)
+        {
+            Transform detected = DetectPlayer();
 
-        if (currentTarget != null)
-            lastKnownPlayerPosition = currentTarget.position;
+            if (detected != null)
+            {
+                // Player is visible
+                currentTarget = detected;
+                lastKnownPlayerPosition = currentTarget.position;
+                loseSightTimer = loseSightDelay; // Reset memory timer
+            }
+            else
+            {
+                // Player not visible
+                loseSightTimer -= Time.deltaTime;
+
+                if (loseSightTimer <= 0)
+                {
+                    currentTarget = null; // Forget player only after delay
+                }
+            }
+        }
+        else
+        {
+            currentTarget = null;
+        }
 
         float distanceToPlayer = currentTarget ?
             Vector3.Distance(transform.position, currentTarget.position) :
@@ -121,11 +149,11 @@ public class WaypointEnemy : MonoBehaviour
         {
             agent.velocity = Vector3.zero;
             agent.isStopped = true;
-            UpdateAnimation(0f); // Idle during alert
+            UpdateAnimation(0f);
             return;
         }
 
-        // State management
+
         if (!isCatching)
         {
             if (distanceToPlayer <= catchRange && currentState == State.Chase)
@@ -138,11 +166,12 @@ public class WaypointEnemy : MonoBehaviour
             }
             else
             {
-                // Determine state based on suspicion
+
                 State newState;
-                if (currentState == State.Chase)
+
+                if (suspicion >= suspicionThreshold)
                 {
-                    newState = (suspicion <= suspicionThreshold * 0.3f) ? State.Suspicious : State.Chase;
+                    newState = State.Chase;
                 }
                 else if (suspicion > 0)
                 {
@@ -158,7 +187,6 @@ public class WaypointEnemy : MonoBehaviour
             }
         }
 
-        // Execute current state behavior
         switch (currentState)
         {
             case State.Patrol:
@@ -178,18 +206,18 @@ public class WaypointEnemy : MonoBehaviour
                 break;
         }
 
-        // Calculate target speed percentage based on state
+
         if (currentState == State.Chase)
         {
-            targetSpeedPercent = 1f; // Run
+            targetSpeedPercent = 1f; 
         }
         else if (agent.velocity.magnitude > 0.1f)
         {
-            targetSpeedPercent = 0.5f; // Walk
+            targetSpeedPercent = 0.5f;
         }
         else
         {
-            targetSpeedPercent = 0f; // Idle
+            targetSpeedPercent = 0f; 
         }
 
         UpdateAnimation(targetSpeedPercent);
@@ -284,8 +312,8 @@ public class WaypointEnemy : MonoBehaviour
      
         animator.SetTrigger("Alert");
 
-        if (alertGrunt != null)
-            AudioSource.PlayClipAtPoint(alertGrunt, transform.position);
+        if (alertSFX != null)
+            alertSFX.Play();
 
         yield return new WaitForSeconds(alertDuration);
 
@@ -321,15 +349,12 @@ public class WaypointEnemy : MonoBehaviour
     {
         if (currentTarget != null)
         {
-            loseSightTimer = loseSightDelay;
+
             suspicion += suspicionIncreaseRate * Time.deltaTime;
         }
         else
         {
-            loseSightTimer -= Time.deltaTime;
-
-            if (loseSightTimer <= 0)
-                suspicion -= suspicionDecreaseRate * Time.deltaTime;
+            suspicion -= suspicionDecreaseRate * Time.deltaTime;
         }
 
         suspicion = Mathf.Clamp(suspicion, 0, suspicionThreshold);
@@ -342,6 +367,13 @@ public class WaypointEnemy : MonoBehaviour
 
     void Patrol()
     {
+        // If no waypoints, just idle in place
+        if (waypoints == null || waypoints.Length == 0)
+        {
+            UpdateAnimation(0f);
+            return;
+        }
+
         if (isIdle)
         {
             idleTimer -= Time.deltaTime;
@@ -429,6 +461,8 @@ public class WaypointEnemy : MonoBehaviour
         isCatching = true;
         gameOver = true;
 
+        
+
         agent.isStopped = true;
         agent.ResetPath();
 
@@ -439,7 +473,14 @@ public class WaypointEnemy : MonoBehaviour
         );
 
         transform.rotation = Quaternion.LookRotation(lookPos - transform.position);
+        currentTarget.gameObject.GetComponentInChildren<CinemachineThirdPersonFollow>().AvoidObstacles.Enabled = false;
+        ThirdPersonController.SetMovement(false);
+
         animator.SetTrigger("Attack");
+        if (musicManager != null && musicManager.missionFailedSFX != null)
+        {
+            musicManager.PlayCaughtBackgroundMusic();
+        }
 
         StartCoroutine(RestartGame());
     }
@@ -447,8 +488,7 @@ public class WaypointEnemy : MonoBehaviour
     IEnumerator RestartGame()
     {
         yield return new WaitForSeconds(restartDelay);
-        if (restartScreen != null)
-            restartScreen.SetActive(true);
+        mainUI.RestartPanel();
     }
 
     void StartIdle()

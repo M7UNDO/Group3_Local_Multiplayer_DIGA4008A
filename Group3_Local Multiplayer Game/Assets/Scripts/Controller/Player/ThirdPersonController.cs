@@ -104,6 +104,7 @@ public class ThirdPersonController : MonoBehaviour
 
     private void Awake()
     {
+        SetMovement(true);
 
         if (_mainCamera == null)
         {
