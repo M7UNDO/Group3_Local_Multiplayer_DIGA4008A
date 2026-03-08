@@ -1,6 +1,5 @@
+using TMPro;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.Windows;
 
 public class StackedController : MonoBehaviour
 {
@@ -82,11 +81,25 @@ public class StackedController : MonoBehaviour
     public Transform playerCameraTransform;
     private bool pickedUp;
 
+    [Header("Interaction Settings")]
+    [Space(5)]
+    [SerializeField] public float interactionRange;
+    public LayerMask interactionLayer;
+    [SerializeField] private Outline objectOutline;
+    public Canvas hudCanvas;
+
+    public bool isInteracting;
+    public GameObject interactPrompt;
+    [SerializeField] private TextMeshProUGUI interactText;
+    private IInteractable currentInteractable;
+
+
 
     private Vector2 _moveInput;
     private Vector2 _lookInput;
     private bool _jumpInput;
     private bool _sprintInput;
+    private bool _interactInput;
     private bool _grabInput;
     private bool _previousGrabInput;
 
@@ -232,6 +245,9 @@ public class StackedController : MonoBehaviour
         //movement and physics
         GroundedCheck();
         Move();
+        Interaction();
+        DetectInteractable();
+        UpdateCrosshairHover();
         JumpAndGravity();
         DetectObject();
         Grab();
@@ -250,6 +266,7 @@ public class StackedController : MonoBehaviour
         _jumpInput = false;
         _sprintInput = false;
         _grabInput = false;
+        _interactInput = false;
 
 
         // BOTTOM PLAYER INPUT
@@ -299,6 +316,7 @@ public class StackedController : MonoBehaviour
                 topLook = rawLook;
 
             _grabInput = _topPlayer.inputHandler.grab;
+            _interactInput = _topPlayer.inputHandler.interact;
 
             // Device change detection
             if (_topPlayer.playerInput != null)
@@ -445,6 +463,100 @@ public class StackedController : MonoBehaviour
             currentOutline.enabled = false;
             currentOutline = null;
         }
+    }
+
+    private void DetectInteractable()
+    {
+        currentInteractable = null;
+
+        Ray ray = new Ray(_mainCamera.transform.position, _mainCamera.transform.forward);
+        Debug.DrawRay(ray.origin, ray.direction * interactionRange, Color.green);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, interactionRange, interactionLayer))
+        {
+            if (hit.collider.TryGetComponent<IInteractable>(out var interactable))
+            {
+                currentInteractable = interactable;
+                if (interactText != null)
+                {
+                    if (hit.collider.GetComponent<Door>())
+                    {
+                        interactText.text = hit.collider.GetComponent<Door>().promptMessage;
+                        print("Door Hit");
+                    }
+
+                }
+                else
+                {
+                    interactText.text = "Interact";
+                }
+
+                var outline = hit.collider.GetComponent<Outline>();
+
+                if (outline != null)
+                {
+                    objectOutline = outline;
+                }
+            }
+            else
+            {
+                print("Nothing Hit");
+            }
+        }
+        else
+        {
+            print("Nothing Hit");
+        }
+    }
+   
+
+    public void Interaction()
+    {
+        if (currentInteractable != null)
+        {
+            if (_interactInput)
+            {
+                print("Interacted!");
+                currentInteractable.Interact();
+
+                _interactInput = false;
+            }
+
+        }
+    }
+
+    private void UpdateCrosshairHover()
+    {
+
+        if (currentInteractable != null)
+        {
+            if (interactPrompt != null)
+            {
+                interactPrompt.SetActive(true);
+            }
+
+            if (objectOutline != null)
+            {
+                objectOutline.enabled = true;
+            }
+
+
+        }
+        else
+        {
+            if (interactPrompt != null)
+            {
+                interactPrompt.SetActive(false);
+            }
+
+            if (objectOutline != null)
+            {
+                objectOutline.enabled = false;
+            }
+
+
+        }
+
     }
 
     private void Grab()

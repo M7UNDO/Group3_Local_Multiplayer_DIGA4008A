@@ -12,6 +12,7 @@ public class PlayerInputHandler : MonoBehaviour
     public bool crouch;
     public bool stack;
     public bool grab;
+    public bool interact;
     public Vector2 balance;
 
     [Header("Movement Settings")]
@@ -32,6 +33,7 @@ public class PlayerInputHandler : MonoBehaviour
     private InputAction crouchAction;
     private InputAction stackAction;
     public InputAction grabAction;
+    public InputAction interactAction;
     public InputAction GrabAction => grabAction;
     private InputAction balanceAction;
 
@@ -52,6 +54,7 @@ public class PlayerInputHandler : MonoBehaviour
             crouchAction = playerMap.FindAction("Crouch");
             stackAction = playerMap.FindAction("Stack");
             grabAction = playerMap.FindAction("Grab");
+            interactAction = playerMap.FindAction("Interact");
         }
     }
 
@@ -74,6 +77,9 @@ public class PlayerInputHandler : MonoBehaviour
 
         grabAction.performed += OnGrabPerformed;
         grabAction.canceled += OnGrabCancelled;
+
+        interactAction.performed += OnInteractPerformed;
+        interactAction.canceled += OnInteractCancelled;
 
         sprintAction.performed += OnSprintPerformed;
         sprintAction.canceled += OnSprintCanceled;
@@ -113,6 +119,9 @@ public class PlayerInputHandler : MonoBehaviour
         grabAction.performed -= OnGrabPerformed;
         grabAction.canceled -= OnGrabCancelled;
 
+        interactAction.performed -= OnInteractPerformed;
+        interactAction.canceled -= OnInteractCancelled;
+
         stackAction.performed -= OnStackPerformed;
 
         playerMap.Disable();
@@ -147,6 +156,16 @@ public class PlayerInputHandler : MonoBehaviour
     private void OnJumpCanceled(InputAction.CallbackContext ctx)
     {
         JumpInput(false);
+    }
+
+    private void OnInteractPerformed(InputAction.CallbackContext ctx)
+    {
+        InteractInput(true);
+    }
+
+    private void OnInteractCancelled(InputAction.CallbackContext ctx)
+    {
+        InteractInput(false);
     }
 
     private void OnGrabPerformed(InputAction.CallbackContext ctx)
@@ -199,6 +218,10 @@ public class PlayerInputHandler : MonoBehaviour
     {
         JumpInput(value.isPressed);
     }
+    public void OnInteract(InputValue value)
+    {
+        InteractInput(value.isPressed);
+    }
     public void OnGrab(InputValue value)
     {
         GrabInput(value.isPressed);
@@ -226,6 +249,10 @@ public class PlayerInputHandler : MonoBehaviour
     public void JumpInput(bool newJumpState)
     {
         jump = newJumpState;
+    }
+    public void InteractInput(bool newInteractState)
+    {
+        interact = newInteractState;
     }
     public void GrabInput(bool newGrabState)
     {

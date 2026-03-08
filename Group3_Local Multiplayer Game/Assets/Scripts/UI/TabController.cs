@@ -36,6 +36,11 @@ namespace View
             }
         }
 
+        private void OnEnable()
+        {
+            ActivateTab(0);
+        }
+
         public void ActivateTab(int tabNo)
         {
             currentTab = tabNo;
