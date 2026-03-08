@@ -33,12 +33,12 @@ public class MainUI : MonoBehaviour
         playerControls.Player.Enable();
 
         backAction = ctx => Back();
-        playerControls.Player.Pause.performed += backAction;
+        playerControls.Player.Back.performed += backAction;
     }
 
     private void OnDisable()
     {
-        playerControls.Player.Pause.performed -= backAction;
+        playerControls.Player.Back.performed -= backAction;
         playerControls.Player.Disable();
     }
 
