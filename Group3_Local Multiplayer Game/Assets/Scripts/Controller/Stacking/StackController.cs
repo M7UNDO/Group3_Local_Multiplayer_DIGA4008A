@@ -245,12 +245,12 @@ public class StackedController : MonoBehaviour
         //movement and physics
         GroundedCheck();
         Move();
-        Interaction();
-        DetectInteractable();
+        
         UpdateCrosshairHover();
         JumpAndGravity();
         DetectObject();
-        Grab();
+        //Grab();
+        Interaction();
     }
 
     private void LateUpdate()
@@ -423,71 +423,32 @@ public class StackedController : MonoBehaviour
 
     private void DetectObject()
     {
-        if (pickedUp)
-        {
-            return;
-        }
-
-        ObjectGrabbable lookAtobject = null;
-
-
-        if (Physics.Raycast(playerCameraTransform.position, playerCameraTransform.forward, out RaycastHit raycastHit, pickUpDistance, pickUpLayerMask))
-        {
-            if (raycastHit.transform.TryGetComponent(out ObjectGrabbable grabbable))
-            {
-                lookAtobject = grabbable;
-
-                Outline newOutline = raycastHit.transform.GetComponent<Outline>();
-
-   
-                if (currentOutline != newOutline)
-                {
-
-                    if (currentOutline != null)
-                        currentOutline.enabled = false;
-
-
-                    currentOutline = newOutline;
-                    currentOutline.enabled = true;
-                }
-
-                return;
-            }
-        }
-
-        lookAtobject = null;
-
-        if (currentOutline != null)
-        {
-            currentOutline.enabled = false;
-            currentOutline = null;
-        }
-    }
-
-    private void DetectInteractable()
-    {
         currentInteractable = null;
+        objectGrabbable = null;
 
-        Ray ray = new Ray(_mainCamera.transform.position, _mainCamera.transform.forward);
-        Debug.DrawRay(ray.origin, ray.direction * interactionRange, Color.green);
 
-        if (Physics.Raycast(ray, out RaycastHit hit, interactionRange, interactionLayer))
+        Ray ray = new Ray(playerCameraTransform.position, playerCameraTransform.forward);
+        Debug.DrawRay(ray.origin, ray.direction * pickUpDistance, Color.yellow);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, interactionRange))
         {
+            if (currentObject != null && hit.collider.gameObject == currentObject.gameObject)
+                return;
+
             if (hit.collider.TryGetComponent<IInteractable>(out var interactable))
             {
                 currentInteractable = interactable;
+
                 if (interactText != null)
                 {
                     if (hit.collider.GetComponent<Door>())
                     {
                         interactText.text = hit.collider.GetComponent<Door>().promptMessage;
-                        print("Door Hit");
                     }
-
-                }
-                else
-                {
-                    interactText.text = "Interact";
+                    else
+                    {
+                        interactText.text = "Interact";
+                    }
                 }
 
                 var outline = hit.collider.GetComponent<Outline>();
@@ -496,66 +457,88 @@ public class StackedController : MonoBehaviour
                 {
                     objectOutline = outline;
                 }
+
+                return;
             }
-            else
+
+            // ---------- GRABBABLE ----------
+            if (hit.collider.TryGetComponent<ObjectGrabbable>(out var grabbable))
             {
-                print("Nothing Hit");
+                objectGrabbable = grabbable;
+
+                if (interactText != null)
+                {
+                    interactText.text = "Pick Up";
+                }
+
+                var outline = hit.collider.GetComponent<Outline>();
+
+                if (outline != null)
+                {
+                    objectOutline = outline;
+                }
+
+                return;
             }
-        }
-        else
-        {
-            print("Nothing Hit");
         }
     }
-   
+
 
     public void Interaction()
     {
-        if (currentInteractable != null)
-        {
-            if (_topPlayer.inputHandler.InteractAction.WasPressedThisFrame())
-            {
-                print("Interacted!");
-                currentInteractable.Interact();
+        if (_topPlayer?.inputHandler == null) return;
 
-                _interactInput = false;
+        if (_topPlayer.inputHandler.InteractAction.WasPressedThisFrame())
+        {
+            // NORMAL INTERACT
+            if (currentInteractable != null)
+            {
+                currentInteractable.Interact();
+                return;
             }
 
+            // PICK UP
+            if (!pickedUp && objectGrabbable != null)
+            {
+                currentObject = objectGrabbable;
+                currentObject.Grab(objectGrabPointTransform);
+
+                pickedUp = true;
+
+                if (objectOutline != null)
+                    objectOutline.enabled = false;
+
+                return;
+            }
+
+            // DROP
+            if (pickedUp && currentObject != null)
+            {
+                currentObject.Drop();
+                currentObject = null;
+                pickedUp = false;
+            }
         }
     }
 
     private void UpdateCrosshairHover()
     {
-
-        if (currentInteractable != null)
+        if (currentInteractable != null || objectGrabbable != null)
         {
             if (interactPrompt != null)
-            {
                 interactPrompt.SetActive(true);
-            }
 
             if (objectOutline != null)
-            {
                 objectOutline.enabled = true;
-            }
-
-
         }
         else
         {
             if (interactPrompt != null)
-            {
                 interactPrompt.SetActive(false);
-            }
 
             if (objectOutline != null)
-            {
                 objectOutline.enabled = false;
-            }
-
-
         }
-
     }
 
     private void Grab()
@@ -570,6 +553,12 @@ public class StackedController : MonoBehaviour
                 {
                     if (raycastHit.transform.TryGetComponent(out objectGrabbable))
                     {
+                        if (currentOutline != null)
+                        {
+                            currentOutline.enabled = false;
+                            currentOutline = null;
+                        }
+
                         objectGrabbable.Grab(objectGrabPointTransform);
                         pickedUp = true;
                     }
