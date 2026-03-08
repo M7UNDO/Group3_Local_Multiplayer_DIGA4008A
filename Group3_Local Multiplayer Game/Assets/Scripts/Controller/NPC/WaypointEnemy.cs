@@ -80,11 +80,11 @@ public class WaypointEnemy : MonoBehaviour
         animator = GetComponent<Animator>();
         mainUI = GameObject.FindAnyObjectByType<MainUI>();
 
-        // Configure NavMeshAgent for smooth movement
         agent.acceleration = 8f;
         agent.angularSpeed = 360f;
 
-        if (waypointGroup != null && waypointGroup.childCount > 1)
+        // Setup waypoints only if they exist
+        if (waypointGroup != null && waypointGroup.childCount > 0)
         {
             waypoints = new Transform[waypointGroup.childCount];
 
@@ -95,16 +95,21 @@ public class WaypointEnemy : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Waypoint group not assigned or has too few children.");
+            waypoints = null; // This NPC will be stationary
         }
 
         ChangeState(State.Patrol);
-        GoToNextWaypoint();
+
+        // Only start patrolling if waypoints exist
+        if (waypoints != null && waypoints.Length > 0)
+        {
+            GoToNextWaypoint();
+        }
     }
 
     void Update()
     {
-        if (gameOver || waypoints == null || waypoints.Length < 2)
+        if (gameOver)
             return;
 
         if (currentState != State.Returning && currentState != State.Catch)
@@ -362,6 +367,13 @@ public class WaypointEnemy : MonoBehaviour
 
     void Patrol()
     {
+        // If no waypoints, just idle in place
+        if (waypoints == null || waypoints.Length == 0)
+        {
+            UpdateAnimation(0f);
+            return;
+        }
+
         if (isIdle)
         {
             idleTimer -= Time.deltaTime;
