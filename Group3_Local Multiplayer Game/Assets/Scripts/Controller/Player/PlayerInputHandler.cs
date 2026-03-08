@@ -35,6 +35,7 @@ public class PlayerInputHandler : MonoBehaviour
     public InputAction grabAction;
     public InputAction interactAction;
     public InputAction GrabAction => grabAction;
+    public InputAction InteractAction => interactAction;
     private InputAction balanceAction;
 
     private void Awake()

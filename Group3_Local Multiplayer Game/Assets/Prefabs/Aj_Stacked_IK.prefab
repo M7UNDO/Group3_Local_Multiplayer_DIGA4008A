@@ -203,6 +203,7 @@ GameObject:
   - component: {fileID: 395354734347651183}
   - component: {fileID: 4378210823548086676}
   - component: {fileID: 8714363485042643177}
+  - component: {fileID: 6983326107025484160}
   m_Layer: 6
   m_Name: Prompt
   m_TagString: Untagged
@@ -227,8 +228,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -69, y: 0}
-  m_SizeDelta: {x: 70, y: 79}
+  m_AnchoredPosition: {x: -69, y: -73}
+  m_SizeDelta: {x: 70, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4378210823548086676
 CanvasRenderer:
@@ -251,7 +252,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.9411765}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -268,6 +269,23 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &6983326107025484160
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 355708991404844164}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 094c58a0c8a684e46bf597c1ba3661ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::stackedUIPrompt
+  deviceDetector: {fileID: 2692387133307107421}
+  promptImage: {fileID: 8714363485042643177}
+  keyboardSprite: {fileID: 21300000, guid: 7b28617454e633e458ec1449198a2634, type: 3}
+  xboxSprite: {fileID: 21300000, guid: 5844670db02d0d84dab0335c2c6a23f2, type: 3}
+  playStationSprite: {fileID: 21300000, guid: 470996b66a12c3b4b80c105c5ad1f8e0, type: 3}
 --- !u!1 &439147973068788372
 GameObject:
   m_ObjectHideFlags: 0
@@ -414,6 +432,7 @@ GameObject:
   - component: {fileID: 7274539081289962497}
   - component: {fileID: 8765037100302165603}
   - component: {fileID: 5480463621495694611}
+  - component: {fileID: 2692387133307107421}
   m_Layer: 6
   m_Name: Aj_Stacked_IK
   m_TagString: Player
@@ -847,6 +866,18 @@ MonoBehaviour:
   - {fileID: 7611925878998150246}
   - {fileID: 4838457748307319089}
   - {fileID: 5677169105020158529}
+--- !u!114 &2692387133307107421
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 995853267339866125}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d12c39a598bd3b4084aeab460417e57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StackedDeviceDetector
 --- !u!1 &1032972634921487181
 GameObject:
   m_ObjectHideFlags: 0
@@ -13838,15 +13869,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 58ac333dc9dcd63498ccfe84edb21475, type: 2}
+  m_sharedMaterial: {fileID: -8007776007104642461, guid: 58ac333dc9dcd63498ccfe84edb21475, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4043309055
+  m_fontColor: {r: 1, g: 1, b: 1, a: 0.9411765}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

@@ -425,7 +425,6 @@ public class StackedController : MonoBehaviour
     {
         if (pickedUp)
         {
-            print("Object picked Up");
             return;
         }
 
@@ -514,7 +513,7 @@ public class StackedController : MonoBehaviour
     {
         if (currentInteractable != null)
         {
-            if (_interactInput)
+            if (_topPlayer.inputHandler.InteractAction.WasPressedThisFrame())
             {
                 print("Interacted!");
                 currentInteractable.Interact();
@@ -578,7 +577,7 @@ public class StackedController : MonoBehaviour
             }
             else
             {
-                
+                if (currentInteractable != null) return;
                 objectGrabbable.Drop();
                 objectGrabbable = null;
             }
