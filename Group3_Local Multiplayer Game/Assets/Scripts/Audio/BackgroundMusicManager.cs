@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class BackgroundMusicManager : MonoBehaviour
 {
+    [Header("References")]
+    [Space(10)]
+    [SerializeField] private GameObject selectionCanvas;
     [Header("Audio Settings")]
     public AudioSource audioSource;
     public AudioClip[] backgroundTracks;
@@ -26,6 +29,17 @@ public class BackgroundMusicManager : MonoBehaviour
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>();
 
+        selectionCanvas = GameObject.Find("JoinCanvas");
+
+        if(selectionCanvas != null)
+        {
+            if (selectionCanvas.activeSelf)
+            {
+                return;
+            }
+        }
+        
+
         if (backgroundTracks.Length > 0)
         {
             if (playRandomly)
@@ -33,6 +47,7 @@ public class BackgroundMusicManager : MonoBehaviour
                 currentTrackIndex = Random.Range(0, backgroundTracks.Length);
                 print("Playing random song!");
             }
+
             else
             {
                 currentTrackIndex = 0;
@@ -64,7 +79,7 @@ public class BackgroundMusicManager : MonoBehaviour
         audioSource.Play();
     }
 
-    void PlayNextTrack()
+    public void PlayNextTrack()
     {
         if (backgroundTracks.Length == 0)
             return;
