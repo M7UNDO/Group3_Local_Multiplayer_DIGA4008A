@@ -10,12 +10,15 @@ public class PlayerManager : MonoBehaviour
 {
     [Header("References")]
     public List<PlayerInput> players = new List<PlayerInput>();
+
     [SerializeField] private List<Transform> startingPoints;
     [SerializeField] private PlayerInputManager playerInputManager;
     public StackManager stackManager;
     public BackgroundMusicManager backgroundMusicManager;
 
     [Header("Join UI Settings")]
+    public static int JoinedPlayerCount = 0;
+    public static List<InputDevice> JoinedDevices = new List<InputDevice>();
     [SerializeField] private GameObject joinCanvas;
     [SerializeField] private TextMeshProUGUI p1Text;
     [SerializeField] private TextMeshProUGUI p2Text;
@@ -35,15 +38,13 @@ public class PlayerManager : MonoBehaviour
 
     private void Awake()
     {
-        if (ScenePersistenceManager.Instance != null &&
-        ScenePersistenceManager.Instance.PreviousSceneName != "MainMenu")
+        playerControls = new PlayerControls();
+        if (JoinedPlayerCount > 0)
         {
-            SkipJoiningLogic();
+            StartCoroutine(RespawnPlayers());
+            return;
         }
-        playerInputManager = FindFirstObjectByType<PlayerInputManager>();
 
-        //fromMain = SceneManager.GetActiveScene();
-        // Pause the game immediately before players join
         Time.timeScale = 0f;
 
         originalPromptScale = statusPrompt.transform.localScale;
@@ -54,22 +55,10 @@ public class PlayerManager : MonoBehaviour
         p2Text.color = waitingColor;
         statusPrompt.text = "PRESS ANY BUTTON TO JOIN";
 
-        playerControls = new PlayerControls();
+        
         StartCoroutine(PulsePromptRoutine());
     }
 
-    private void SkipJoiningLogic()
-    {
-        gameStarted = true;
-        Time.timeScale = 1f;
-        if (joinCanvas) joinCanvas.SetActive(false);
-
-        // Optional: If players persist, reactivate their input here
-        foreach (var player in players)
-        {
-            player.ActivateInput();
-        }
-    }
 
     private void OnEnable()
     {
@@ -85,9 +74,32 @@ public class PlayerManager : MonoBehaviour
         playerControls.Player.Disable();
     }
 
+    IEnumerator RespawnPlayers()
+    {
+        if (joinCanvas) joinCanvas.SetActive(false);
+
+        yield return null;
+
+        for (int i = 0; i < JoinedDevices.Count; i++)
+        {
+            playerInputManager.JoinPlayer(
+                i,
+                -1,
+                null,
+                JoinedDevices[i]
+            );
+        }
+
+        yield return null;
+    }
+
     public void AddPlayer(PlayerInput player)
     {
         players.Add(player);
+        JoinedPlayerCount = players.Count;
+
+        if (!JoinedDevices.Contains(player.devices[0]))
+            JoinedDevices.Add(player.devices[0]);
         player.DeactivateInput();
 
         if (players.Count == 1)
