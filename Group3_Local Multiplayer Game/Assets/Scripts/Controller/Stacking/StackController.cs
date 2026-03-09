@@ -73,13 +73,13 @@ public class StackedController : MonoBehaviour
 
     [Header("Pick Up")]
     [SerializeField] private Outline outline;
-    private ObjectGrabbable currentObject;
+    public ObjectGrabbable currentObject;
     float pickUpDistance = 10f;
     public LayerMask pickUpLayerMask;
     public Transform objectGrabPointTransform;
     [SerializeField] private ObjectGrabbable objectGrabbable;
     public Transform playerCameraTransform;
-    private bool pickedUp;
+    public bool pickedUp;
 
     [Header("Interaction Settings")]
     [Space(5)]
@@ -251,6 +251,16 @@ public class StackedController : MonoBehaviour
         DetectObject();
         //Grab();
         Interaction();
+
+        if (_topPlayer == null || _bottomPlayer == null)
+        {
+            if (pickedUp && currentObject != null)
+            {
+                currentObject.ResetToSpawn();
+                currentObject = null;
+                pickedUp = false;
+            }
+        }
     }
 
     private void LateUpdate()
@@ -483,9 +493,7 @@ public class StackedController : MonoBehaviour
         }
     }
 
-    //Title: How to Pick up and Drop Objects/Items! (First and Third Person, Unity Tutorial)
-    //Author: Monkey, C.
-    //Availability: Code Monkey (2022) How to Pick up and Drop Objects/Items! (First and Third person, Unity tutorial). https://www.youtube.com/watch?v=2IhzPTS4av4.
+    
 
     public void Interaction()
     {

@@ -23,6 +23,7 @@ public class StackManager : MonoBehaviour
     private bool unstackInProgress = false;
     public PlayerInputManager playerInputManager;
 
+
     [Header("Stack SFX")]
 
     public AudioSource stackSFX;
@@ -41,7 +42,7 @@ public class StackManager : MonoBehaviour
 
     private List<PlayerStackInfo> activePlayers = new List<PlayerStackInfo>();
     private GameObject currentStackedCharacter;
-    private StackedController stackedController;
+    public StackedController stackedController;
     private StackedInputHandler stackedInputHandler;
 
 
@@ -329,6 +330,13 @@ public class StackManager : MonoBehaviour
 
         unstackInProgress = true;
         lastOperationTime = Time.time;
+
+        if (stackedController != null && stackedController.currentObject != null)
+        {
+            stackedController.currentObject.ResetToSpawn();
+            stackedController.currentObject = null;
+            stackedController.pickedUp = false;
+        }
 
         if (currentStackedCharacter == null)
         {

@@ -137,8 +137,15 @@ public class PlayerManager : MonoBehaviour
             int spawnIndex = player.playerIndex % startingPoints.Count;
             Transform spawnPoint = startingPoints[spawnIndex];
 
-            if (players.Count <= 2) // Only for first 2 players
-                StartCoroutine(PlacePlayerNextFrame(player, spawnPoint));
+
+            if(players.Count <= 2)
+            {
+                Transform t = player.transform;
+
+                t.position = spawnPoint.position;
+                t.rotation = spawnPoint.rotation;
+            }
+            
         }
 
 
