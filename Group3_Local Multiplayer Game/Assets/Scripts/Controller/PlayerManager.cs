@@ -98,8 +98,12 @@ public class PlayerManager : MonoBehaviour
     {
         players.Add(player);
 
-        if (!JoinedDevices.Contains(player.devices[0]))
-            JoinedDevices.Add(player.devices[0]);
+        JoinedPlayerCount = players.Count;
+        if (player.devices.Count > 0)
+        {
+            if (!JoinedDevices.Contains(player.devices[0]))
+                JoinedDevices.Add(player.devices[0]);
+        }
         player.DeactivateInput();
 
         if (players.Count == 1)
