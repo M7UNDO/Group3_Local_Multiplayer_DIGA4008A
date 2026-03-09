@@ -1,30 +1,52 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using Unity.Cinemachine;
 
 public class LevelInitializer : MonoBehaviour
 {
-    [SerializeField]
-    private Transform[] PlayerSpawns;
+    [SerializeField] private Transform[] spawnPoints;
+    [SerializeField] private GameObject playerPrefab;
+    [SerializeField] private StackManager stackManager;
 
-    [SerializeField]
-    private GameObject playerPrefab;
-    // Start is called before the first frame update
     void Start()
     {
-        var playerConfigs = PlayerConfigurationManager.Instance.GetPlayerConfigs().ToArray();
-        for (int i = 0; i < playerConfigs.Length; i++)
-        {
-            var player = Instantiate(playerPrefab, PlayerSpawns[i].position, PlayerSpawns[i].rotation, gameObject.transform);
-            player.GetComponent<PlayerInputHandler>().InitializePlayer(playerConfigs[i]);
-        }
+        var playerConfigs = PlayerConfigurationManager.Instance.GetPlayerConfigs();
 
+        for (int i = 0; i < playerConfigs.Count; i++)
+        {
+            var config = playerConfigs[i];
+
+            var player = Instantiate(
+                playerPrefab,
+                spawnPoints[i].position,
+                spawnPoints[i].rotation
+            );
+
+            var pi = config.Input;
+
+            pi.transform.SetParent(player.transform);
+
+            SetupCamera(player, pi.playerIndex);
+
+            stackManager.RegisterPlayer(player, pi.playerIndex);
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    void SetupCamera(GameObject player, int index)
     {
+        CinemachineCamera cineCam = player.GetComponentInChildren<CinemachineCamera>();
 
+        if (cineCam != null)
+            cineCam.OutputChannel = (Unity.Cinemachine.OutputChannels)(1 << index);
+
+        Camera cam = player.GetComponentInChildren<Camera>();
+
+        if (cam != null)
+        {
+            var brain = cam.GetComponent<CinemachineBrain>();
+
+            if (brain != null)
+                brain.ChannelMask = (Unity.Cinemachine.OutputChannels)(1 << index);
+        }
     }
 }

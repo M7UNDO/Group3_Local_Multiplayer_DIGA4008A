@@ -1,63 +1,59 @@
-using System.Collections;
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
+using TMPro;
 using UnityEngine.UI;
 
 public class PlayerSetupMenuController : MonoBehaviour
 {
     private int playerIndex;
+    private Canvas canvas;
 
-    [SerializeField]
-    private TextMeshProUGUI titleText;
-    [SerializeField]
-    private GameObject readyPanel;
-    [SerializeField]
-    private GameObject menuPanel;
-    [SerializeField]
-    private Button readyButton;
+    [SerializeField] private RectTransform panelRect;
+    [SerializeField] private TextMeshProUGUI titleText;
 
-    private float ignoreInputTime = 1.5f;
-    private bool inputEnabled;
-    public void setPlayerIndex(int pi)
+    private void Awake()
     {
-        playerIndex = pi;
-        titleText.SetText("Player " + (pi + 1).ToString());
-        ignoreInputTime = Time.time + ignoreInputTime;
+        // Get the canvas on the root
+        canvas = GetComponent<Canvas>();
     }
 
-    // Start is called before the first frame update
-    void Start()
+    public void SetPlayerIndex(int index)
     {
+        playerIndex = index;
+        titleText.text = "Player " + (index + 1);
 
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (Time.time > ignoreInputTime)
+        // Set canvas sort order to ensure proper layering
+        if (canvas != null)
         {
-            inputEnabled = true;
+            canvas.sortingOrder = index; // Player 1 = 0, Player 2 = 1
         }
-    }
 
-    public void SelectColor(Material mat)
-    {
-        if (!inputEnabled) { return; }
+        // Position the panel based on player index
+        if (panelRect != null)
+        {
+            if (index == 0)
+            {
+                // Left half
+                panelRect.anchorMin = new Vector2(0, 0);
+                panelRect.anchorMax = new Vector2(0.5f, 1);
+            }
+            else if (index == 1)
+            {
+                // Right half
+                panelRect.anchorMin = new Vector2(0.5f, 0);
+                panelRect.anchorMax = new Vector2(1f, 1);
+            }
 
-        PlayerConfigurationManager.Instance.SetPlayerColor(playerIndex, mat);
-        readyPanel.SetActive(true);
-        readyButton.interactable = true;
-        menuPanel.SetActive(false);
-        readyButton.Select();
+            // Reset offsets
+            panelRect.offsetMin = Vector2.zero;
+            panelRect.offsetMax = Vector2.zero;
+        }
 
+        Debug.Log($"Player {index} menu setup complete - Panel should be visible");
     }
 
     public void ReadyPlayer()
     {
-        if (!inputEnabled) { return; }
-
+        Debug.Log($"Player {playerIndex} pressed ready button");
         PlayerConfigurationManager.Instance.ReadyPlayer(playerIndex);
-        readyButton.gameObject.SetActive(false);
     }
 }
