@@ -3169,7 +3169,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 0}
+  m_Texture: {fileID: 2800000, guid: e807eebebe168d44ab18c17ed0e564de, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -5631,7 +5631,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Completion
   Candies: 0
   Endscreen: {fileID: 996606926}
-  EndBox: {fileID: 0}
+  EndBox: {fileID: 575437027}
 --- !u!4 &1858486120
 Transform:
   m_ObjectHideFlags: 0
