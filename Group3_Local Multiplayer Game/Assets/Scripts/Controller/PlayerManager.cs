@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 public class PlayerManager : MonoBehaviour
@@ -12,6 +13,7 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private List<Transform> startingPoints;
     [SerializeField] private PlayerInputManager playerInputManager;
     public StackManager stackManager;
+    public BackgroundMusicManager backgroundMusicManager;
 
     [Header("Join UI Settings")]
     [SerializeField] private GameObject joinCanvas;
@@ -29,10 +31,18 @@ public class PlayerManager : MonoBehaviour
     private bool gameStarted = false;
     private Vector3 originalPromptScale;
 
+    public bool fromMain;
+
     private void Awake()
     {
+        if (ScenePersistenceManager.Instance != null &&
+        ScenePersistenceManager.Instance.PreviousSceneName != "MainMenu")
+        {
+            SkipJoiningLogic();
+        }
         playerInputManager = FindFirstObjectByType<PlayerInputManager>();
 
+        //fromMain = SceneManager.GetActiveScene();
         // Pause the game immediately before players join
         Time.timeScale = 0f;
 
@@ -46,6 +56,19 @@ public class PlayerManager : MonoBehaviour
 
         playerControls = new PlayerControls();
         StartCoroutine(PulsePromptRoutine());
+    }
+
+    private void SkipJoiningLogic()
+    {
+        gameStarted = true;
+        Time.timeScale = 1f;
+        if (joinCanvas) joinCanvas.SetActive(false);
+
+        // Optional: If players persist, reactivate their input here
+        foreach (var player in players)
+        {
+            player.ActivateInput();
+        }
     }
 
     private void OnEnable()
@@ -108,6 +131,7 @@ public class PlayerManager : MonoBehaviour
         }
 
         if (joinCanvas) joinCanvas.SetActive(false);
+        backgroundMusicManager.PlayNextTrack();
         StopAllCoroutines();
     }
 

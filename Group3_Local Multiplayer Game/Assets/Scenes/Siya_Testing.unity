@@ -364,7 +364,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 14.499084}
+  m_AnchoredPosition: {x: 0, y: 14.499023}
   m_SizeDelta: {x: -400, y: -362.4327}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &130531015
@@ -9216,6 +9216,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7861be0de09b88a4c95cdadb3fc49827, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BackgroundMusicManager
+  selectionCanvas: {fileID: 0}
   audioSource: {fileID: 2012355324}
   backgroundTracks:
   - {fileID: 8300000, guid: fc037dbf010d9d04fbb8e74b76a947a9, type: 3}
