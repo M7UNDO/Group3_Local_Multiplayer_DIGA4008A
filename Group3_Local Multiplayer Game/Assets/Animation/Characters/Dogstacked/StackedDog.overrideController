@@ -1,0 +1,15 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: StackedDog
+  m_Controller: {fileID: 9100000, guid: 2746d86dc5af9f14484875ee19e6cba9, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: b6b38212bdc8e444e8332ed54cd04be1, type: 2}
+    m_OverrideClip: {fileID: 9163257287205964719, guid: d3ae75f9f8b7c41498f4e507b53030a3, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: 1bc0457e9ff3ef44bbeb4a4ddf2b3fe7, type: 2}
+    m_OverrideClip: {fileID: -3591724254871244266, guid: d3ae75f9f8b7c41498f4e507b53030a3, type: 3}
