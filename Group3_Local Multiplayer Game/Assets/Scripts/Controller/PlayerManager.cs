@@ -97,7 +97,6 @@ public class PlayerManager : MonoBehaviour
     public void AddPlayer(PlayerInput player)
     {
         players.Add(player);
-        JoinedPlayerCount = players.Count;
 
         if (!JoinedDevices.Contains(player.devices[0]))
             JoinedDevices.Add(player.devices[0]);
@@ -117,11 +116,20 @@ public class PlayerManager : MonoBehaviour
             playerInputManager.DisableJoining();
         }
 
-        if (startingPoints != null && startingPoints.Count > 0)
+        if (startingPoints == null || startingPoints.Count == 0)
         {
-            int spawnIndex = (players.Count - 1) % startingPoints.Count;
-            StartCoroutine(PlacePlayerNextFrame(player, startingPoints[spawnIndex]));
+            Debug.LogError("No starting points assigned in PlayerManager!");
         }
+        else
+        {
+            int spawnIndex = player.playerIndex % startingPoints.Count;
+            Transform spawnPoint = startingPoints[spawnIndex];
+
+            if (players.Count <= 2) // Only for first 2 players
+                StartCoroutine(PlacePlayerNextFrame(player, spawnPoint));
+        }
+
+
         SetupPlayerSystems(player);
     }
 
@@ -159,7 +167,6 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    // --- REUSED SYSTEM SETUP ---
     private void SetupPlayerSystems(PlayerInput player)
     {
         int channel = player.playerIndex;
@@ -175,19 +182,28 @@ public class PlayerManager : MonoBehaviour
         }
 
         AudioListener listener = playerTransform.GetComponentInChildren<AudioListener>();
-        if (listener != null) listener.enabled = (player.playerIndex == 0);
+        if (listener != null)
+        {
+            int index = player.playerIndex;
+            listener.enabled = (index == 0 || index == 2);
+        }
 
         if (stackManager != null) stackManager.RegisterPlayer(player.gameObject, player.playerIndex);
     }
 
     private IEnumerator PlacePlayerNextFrame(PlayerInput player, Transform spawnPoint)
     {
-        yield return null;
+        yield return null; // wait 1 frame
+
         Transform t = player.transform;
+
+        // Disable CharacterController so it doesn't override the spawn position
         var cc = t.GetComponent<CharacterController>();
         if (cc != null) cc.enabled = false;
+
         t.position = spawnPoint.position;
         t.rotation = spawnPoint.rotation;
+
         if (cc != null) cc.enabled = true;
     }
 }

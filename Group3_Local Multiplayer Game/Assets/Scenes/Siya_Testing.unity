@@ -3579,23 +3579,6 @@ MonoBehaviour:
   controlsFirstSelected: {fileID: 431853145}
   settingsFirstSelected: {fileID: 1031758350}
   restartFirstSelected: {fileID: 1377705003}
---- !u!114 &676897469
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 676897466}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1c971635195cee64bbf1a64e7ffb7bc4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  playerManager: {fileID: 1286030970}
-  stackManager: {fileID: 511082247}
-  enemies:
-  - {fileID: 5235480534035744722}
-  - {fileID: 727401671}
 --- !u!1 &692235070
 GameObject:
   m_ObjectHideFlags: 0
@@ -6597,17 +6580,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 621567455fd1c4ceb811cc8a00b6a1a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInputManager
---- !u!114 &1286030970 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6650052285244055361, guid: 67af98f5aedc9b044b94e6504baa94df, type: 3}
-  m_PrefabInstance: {fileID: 4452240332490745859}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d3668af890771e947b039d670090080a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerManager
 --- !u!1 &1302427043
 GameObject:
   m_ObjectHideFlags: 0
@@ -9666,7 +9638,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 0.8235294, b: 0.28627452, a: 0.392}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -9782,7 +9754,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0.3372549, g: 0.43137255, b: 1, a: 0.392}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -14082,6 +14054,10 @@ PrefabInstance:
       propertyPath: pausePanel
       value: 
       objectReference: {fileID: 4683719408313217399}
+    - target: {fileID: 7423509343096362240, guid: f750e5b570b9b0445be56e542e560a9d, type: 3}
+      propertyPath: selectionCanvas
+      value: 
+      objectReference: {fileID: 269112908}
     - target: {fileID: 8316769799882947120, guid: f750e5b570b9b0445be56e542e560a9d, type: 3}
       propertyPath: m_LocalPosition.x
       value: -2.96696
@@ -14130,9 +14106,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2123533928440155296, guid: f750e5b570b9b0445be56e542e560a9d, type: 3}
       insertIndex: 2
       addedObject: {fileID: 676897467}
-    - targetCorrespondingSourceObject: {fileID: 2123533928440155296, guid: f750e5b570b9b0445be56e542e560a9d, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 676897469}
   m_SourcePrefab: {fileID: 100100000, guid: f750e5b570b9b0445be56e542e560a9d, type: 3}
 --- !u!4 &5347596657980436565
 Transform:
