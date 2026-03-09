@@ -1581,7 +1581,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.18490559, g: 0.1782769, b: 0.1782769, a: 1}
+  m_Color: {r: 0.17730433, g: 0.1764706, b: 0.18431373, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1690,8 +1690,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32
-  m_fontSizeBase: 32
+  m_fontSize: 25
+  m_fontSizeBase: 25
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1803,14 +1803,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0.8235294, b: 0.28627452, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: d0cbc5ec5f055b940a36d60abd2d112c, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2185,8 +2185,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294940032
-  m_fontColor: {r: 0.50377357, g: 0.5834222, b: 1, a: 1}
+    rgba: 4283028223
+  m_fontColor: {r: 1, g: 0.8254494, b: 0.28490567, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -2985,6 +2985,7 @@ GameObject:
   m_Component:
   - component: {fileID: 581528231}
   - component: {fileID: 581528232}
+  - component: {fileID: 581528233}
   m_Layer: 0
   m_Name: EnemyManager
   m_TagString: Untagged
@@ -3023,6 +3024,23 @@ MonoBehaviour:
   suspicionFill: {fileID: 780533480}
   suspicionFillBackground: {fileID: 270219969}
   alertIcon: {fileID: 1628907338}
+--- !u!114 &581528233
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 581528230}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8cb44d0819f1f14e8573ec07b4c0783, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyUIController
+  uiP1: {fileID: 0}
+  uiP2: {fileID: 0}
+  enemy: {fileID: 727401671}
+  camP1: {fileID: 0}
+  camP2: {fileID: 0}
 --- !u!1 &592876812
 GameObject:
   m_ObjectHideFlags: 0
@@ -3561,6 +3579,23 @@ MonoBehaviour:
   controlsFirstSelected: {fileID: 431853145}
   settingsFirstSelected: {fileID: 1031758350}
   restartFirstSelected: {fileID: 1377705003}
+--- !u!114 &676897469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 676897466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c971635195cee64bbf1a64e7ffb7bc4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  playerManager: {fileID: 1286030970}
+  stackManager: {fileID: 511082247}
+  enemies:
+  - {fileID: 5235480534035744722}
+  - {fileID: 727401671}
 --- !u!1 &692235070
 GameObject:
   m_ObjectHideFlags: 0
@@ -6562,6 +6597,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 621567455fd1c4ceb811cc8a00b6a1a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInputManager
+--- !u!114 &1286030970 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6650052285244055361, guid: 67af98f5aedc9b044b94e6504baa94df, type: 3}
+  m_PrefabInstance: {fileID: 4452240332490745859}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3668af890771e947b039d670090080a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerManager
 --- !u!1 &1302427043
 GameObject:
   m_ObjectHideFlags: 0
@@ -7601,8 +7647,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4284966911
-  m_fontColor: {r: 1, g: 0.40566033, b: 0.40566033, a: 1}
+    rgba: 4294930006
+  m_fontColor: {r: 0.3372549, g: 0.43137255, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -8465,14 +8511,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.33773577, g: 0.43289533, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: d0cbc5ec5f055b940a36d60abd2d112c, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -9216,7 +9262,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7861be0de09b88a4c95cdadb3fc49827, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BackgroundMusicManager
-  selectionCanvas: {fileID: 0}
+  selectionCanvas: {fileID: 269112908}
   audioSource: {fileID: 2012355324}
   backgroundTracks:
   - {fileID: 8300000, guid: fc037dbf010d9d04fbb8e74b76a947a9, type: 3}
@@ -13339,9 +13385,37 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 391545963}
     - target: {fileID: 6650052285244055361, guid: 67af98f5aedc9b044b94e6504baa94df, type: 3}
+      propertyPath: joinedColorP1.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6650052285244055361, guid: 67af98f5aedc9b044b94e6504baa94df, type: 3}
+      propertyPath: joinedColorP1.g
+      value: 0.43137255
+      objectReference: {fileID: 0}
+    - target: {fileID: 6650052285244055361, guid: 67af98f5aedc9b044b94e6504baa94df, type: 3}
+      propertyPath: joinedColorP1.r
+      value: 0.3372549
+      objectReference: {fileID: 0}
+    - target: {fileID: 6650052285244055361, guid: 67af98f5aedc9b044b94e6504baa94df, type: 3}
+      propertyPath: joinedColorP2.b
+      value: 0.28627452
+      objectReference: {fileID: 0}
+    - target: {fileID: 6650052285244055361, guid: 67af98f5aedc9b044b94e6504baa94df, type: 3}
+      propertyPath: joinedColorP2.g
+      value: 0.8235294
+      objectReference: {fileID: 0}
+    - target: {fileID: 6650052285244055361, guid: 67af98f5aedc9b044b94e6504baa94df, type: 3}
+      propertyPath: joinedColorP2.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6650052285244055361, guid: 67af98f5aedc9b044b94e6504baa94df, type: 3}
       propertyPath: playerInputManager
       value: 
       objectReference: {fileID: 1286030969}
+    - target: {fileID: 6650052285244055361, guid: 67af98f5aedc9b044b94e6504baa94df, type: 3}
+      propertyPath: backgroundMusicManager
+      value: 
+      objectReference: {fileID: 2012355323}
     - target: {fileID: 7520466929703675361, guid: 67af98f5aedc9b044b94e6504baa94df, type: 3}
       propertyPath: m_Name
       value: PlayerInputManager
@@ -14056,6 +14130,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2123533928440155296, guid: f750e5b570b9b0445be56e542e560a9d, type: 3}
       insertIndex: 2
       addedObject: {fileID: 676897467}
+    - targetCorrespondingSourceObject: {fileID: 2123533928440155296, guid: f750e5b570b9b0445be56e542e560a9d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 676897469}
   m_SourcePrefab: {fileID: 100100000, guid: f750e5b570b9b0445be56e542e560a9d, type: 3}
 --- !u!4 &5347596657980436565
 Transform:

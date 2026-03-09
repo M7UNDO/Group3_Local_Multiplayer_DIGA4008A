@@ -25,7 +25,8 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI statusPrompt;
 
     [Header("UI Visuals")]
-    [SerializeField] private Color joinedColor = Color.green;
+    [SerializeField] private Color joinedColorP1 = Color.green;
+    [SerializeField] private Color joinedColorP2 = Color.green;
     [SerializeField] private Color waitingColor = Color.gray;
     [SerializeField] private float pulseSpeed = 2f;
     [SerializeField] private float pulseAmount = 0.1f;
@@ -105,13 +106,13 @@ public class PlayerManager : MonoBehaviour
         if (players.Count == 1)
         {
             p1Text.text = "PLAYER 1: JOINED!";
-            p1Text.color = joinedColor;
+            p1Text.color = joinedColorP1;
             statusPrompt.text = "WAITING FOR PLAYER 2...";
         }
         else if (players.Count == 2)
         {
             p2Text.text = "PLAYER 2: JOINED!";
-            p2Text.color = joinedColor;
+            p2Text.color = joinedColorP2;
             statusPrompt.text = "BOTH READY! PRESS START";
             playerInputManager.DisableJoining();
         }
