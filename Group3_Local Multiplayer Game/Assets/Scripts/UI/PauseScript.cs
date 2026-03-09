@@ -8,6 +8,7 @@ public class PauseScript : MonoBehaviour
     [Space(5)]
     private bool toggle;
     private PlayerControls playerControls;
+    public GameObject selectionCanvas;
 
     [Header("Pause UI Elements")]
     [Space(5)]
@@ -43,6 +44,10 @@ public class PauseScript : MonoBehaviour
 
     public void Pause()
     {
+        if (selectionCanvas.activeSelf)
+        {
+            return;
+        }
         if (manageUI.settingsPanel.activeSelf)
         {
             return;

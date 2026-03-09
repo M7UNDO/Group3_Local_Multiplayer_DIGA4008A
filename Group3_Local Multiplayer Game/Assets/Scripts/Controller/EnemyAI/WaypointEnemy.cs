@@ -83,7 +83,6 @@ public class WaypointEnemy : MonoBehaviour
         agent.acceleration = 8f;
         agent.angularSpeed = 360f;
 
-        // Setup waypoints only if they exist
         if (waypointGroup != null && waypointGroup.childCount > 0)
         {
             waypoints = new Transform[waypointGroup.childCount];
@@ -95,7 +94,7 @@ public class WaypointEnemy : MonoBehaviour
         }
         else
         {
-            waypoints = null; // This NPC will be stationary
+            waypoints = null; 
         }
 
         ChangeState(State.Patrol);
@@ -118,10 +117,9 @@ public class WaypointEnemy : MonoBehaviour
 
             if (detected != null)
             {
-                // Player is visible
                 currentTarget = detected;
                 lastKnownPlayerPosition = currentTarget.position;
-                loseSightTimer = loseSightDelay; // Reset memory timer
+                loseSightTimer = loseSightDelay; 
             }
             else
             {
@@ -335,9 +333,16 @@ public class WaypointEnemy : MonoBehaviour
         {
             float dist = Vector3.Distance(transform.position, obj.transform.position);
 
-            if (dist < closestDistance)
+            bool isStacked = obj.GetComponent<StackedController>() != null;
+
+            // Stacked players must be closer
+            float detectionRangeMultiplier = isStacked ? 0.6f : 1f;
+
+            float effectiveDist = dist / detectionRangeMultiplier;
+
+            if (effectiveDist < closestDistance)
             {
-                closestDistance = dist;
+                closestDistance = effectiveDist;
                 closest = obj.transform;
             }
         }
@@ -349,8 +354,15 @@ public class WaypointEnemy : MonoBehaviour
     {
         if (currentTarget != null)
         {
+            float increaseRate = suspicionIncreaseRate;
 
-            suspicion += suspicionIncreaseRate * Time.deltaTime;
+            // If the detected target is the stacked character
+            if (currentTarget.GetComponent<StackedController>() != null)
+            {
+                increaseRate *= 0.5f; // 50% slower suspicion gain
+            }
+
+            suspicion += increaseRate * Time.deltaTime;
         }
         else
         {
