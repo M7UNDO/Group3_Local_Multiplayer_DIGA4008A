@@ -193,7 +193,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 6c692a0cf445a32448d5d9473076e879, type: 2}
     - target: {fileID: 919132149155446097, guid: 3101d9a99ad3d1544bac7efb5f3824d0, type: 3}
       propertyPath: m_Name
-      value: GameDesignCharacter
+      value: Dog Character
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -266,7 +266,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 1c99c5ac8a26e114280435bd788c6969, type: 3}
       propertyPath: m_Name
-      value: GameDesignCharacterCAT
+      value: Cat Character
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -417,7 +417,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 291b0402e4e03e044874592244651e29, type: 3}
       propertyPath: m_Name
-      value: tiger
+      value: tiger (police)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -490,7 +490,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: d3ae75f9f8b7c41498f4e507b53030a3, type: 3}
       propertyPath: m_Name
-      value: CharacterDOGstacked
+      value: DOGstacked
       objectReference: {fileID: 0}
     - target: {fileID: 3267070496677364891, guid: d3ae75f9f8b7c41498f4e507b53030a3, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -788,7 +788,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 6c692a0cf445a32448d5d9473076e879, type: 2}
     - target: {fileID: 919132149155446097, guid: c943f9cf66a99634ea6a9f54dc140d76, type: 3}
       propertyPath: m_Name
-      value: CharacterCATstacked
+      value: CATstacked
       objectReference: {fileID: 0}
     - target: {fileID: 4252223087130687879, guid: c943f9cf66a99634ea6a9f54dc140d76, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -1067,7 +1067,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: b024aa998d1d10f4fa13e1dece3f826c, type: 3}
       propertyPath: m_Name
-      value: Horse
+      value: Horse (cashier)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
