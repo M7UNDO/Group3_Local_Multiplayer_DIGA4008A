@@ -11412,8 +11412,8 @@ MonoBehaviour:
   JumpTimeout: 0.5
   FallTimeout: 0.15
   CrouchSpeed: 1.2
-  CrouchHeight: 1
-  StandingHeight: 4.98
+  CrouchHeight: 4.36
+  StandingHeight: 4.36
   Grounded: 1
   GroundedOffset: -0.14
   GroundedRadius: 0.4
