@@ -11366,7 +11366,7 @@ Animator:
   m_GameObject: {fileID: 8100759874838909176}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 697b4fd931cc9db46a9dc5e0be333f0b, type: 3}
-  m_Controller: {fileID: 9100000, guid: ddfadd01e122dd94990dc094747a16cb, type: 2}
+  m_Controller: {fileID: 22100000, guid: 4c743e04fb90c2942b227b018754009a, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -11413,7 +11413,7 @@ MonoBehaviour:
   FallTimeout: 0.15
   CrouchSpeed: 1.2
   CrouchHeight: 1
-  StandingHeight: 4.36
+  StandingHeight: 4.98
   Grounded: 1
   GroundedOffset: -0.14
   GroundedRadius: 0.4
