@@ -13,32 +13,26 @@ public class EnemySuspicionUI : MonoBehaviour
         if (enemy == null) return;
 
         float percent = enemy.suspicion / enemy.suspicionThreshold;
-
         suspicionFill.fillAmount = percent;
 
-
-        if (percent > 0 && percent < 1)
+        if (enemy.IsChasing())
+        {
+            suspicionFillBackground.SetActive(false);
+            alertIcon.SetActive(false);
+        }
+        else if (percent >= 1f)
+        {
+            suspicionFillBackground.SetActive(false);
+            alertIcon.SetActive(true);
+        }
+        else if (percent > 0f)
         {
             suspicionFillBackground.SetActive(true);
             alertIcon.SetActive(false);
         }
-
-        if (percent >= 1)
+        else
         {
-            suspicionFillBackground.gameObject.SetActive(false);
-            alertIcon.SetActive(true);
-        }
-
-        if (percent <= 0)
-        {
-            suspicionFillBackground.gameObject.SetActive(false);
-            alertIcon.SetActive(false);
-        }
-
-    
-        if (enemy.IsChasing())
-        {
-            suspicionFillBackground.gameObject.SetActive(false);
+            suspicionFillBackground.SetActive(false);
             alertIcon.SetActive(false);
         }
     }

@@ -14,6 +14,7 @@ public class MainUI : MonoBehaviour
 
     public GameObject controlUIPanel;
     public GameObject settingsPanel;
+    public GameObject restartScreen;
 
     public bool hasMenuElements;
     public GameObject[] menuUIElements;
@@ -22,6 +23,7 @@ public class MainUI : MonoBehaviour
     public GameObject mainMenuFirstSelected;
     public GameObject controlsFirstSelected;
     public GameObject settingsFirstSelected;
+    public GameObject restartFirstSelected;
 
     private Stack<GameObject> panelHistory = new Stack<GameObject>();
 
@@ -33,12 +35,12 @@ public class MainUI : MonoBehaviour
         playerControls.Player.Enable();
 
         backAction = ctx => Back();
-        playerControls.Player.Pause.performed += backAction;
+        playerControls.Player.Back.performed += backAction;
     }
 
     private void OnDisable()
     {
-        playerControls.Player.Pause.performed -= backAction;
+        playerControls.Player.Back.performed -= backAction;
         playerControls.Player.Disable();
     }
 
@@ -94,6 +96,14 @@ public class MainUI : MonoBehaviour
         SetSelected(firstSelected);
     }
 
+    public void RestartPanel()
+    {
+        if(restartScreen != null)
+        {
+            restartScreen.SetActive(true);
+            SetSelected(restartFirstSelected);
+        }  
+    }
 
     public void Back()
     {
@@ -131,6 +141,11 @@ public class MainUI : MonoBehaviour
     public void QuitGame()
     {
         Application.Quit();
+    }
+
+    public void ResetGame()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void LoadLevelNumber(int levelIndex)

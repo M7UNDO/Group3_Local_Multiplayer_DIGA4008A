@@ -483,6 +483,9 @@ public class StackedController : MonoBehaviour
         }
     }
 
+    //Title: How to Pick up and Drop Objects/Items! (First and Third Person, Unity Tutorial)
+    //Author: Monkey, C.
+    //Availability: Code Monkey (2022) How to Pick up and Drop Objects/Items! (First and Third person, Unity tutorial). https://www.youtube.com/watch?v=2IhzPTS4av4.
 
     public void Interaction()
     {
@@ -490,14 +493,14 @@ public class StackedController : MonoBehaviour
 
         if (_topPlayer.inputHandler.InteractAction.WasPressedThisFrame())
         {
-            // NORMAL INTERACT
+          
             if (currentInteractable != null)
             {
                 currentInteractable.Interact();
                 return;
             }
 
-            // PICK UP
+          
             if (!pickedUp && objectGrabbable != null)
             {
                 currentObject = objectGrabbable;
@@ -511,7 +514,7 @@ public class StackedController : MonoBehaviour
                 return;
             }
 
-            // DROP
+          
             if (pickedUp && currentObject != null)
             {
                 currentObject.Drop();
@@ -540,42 +543,6 @@ public class StackedController : MonoBehaviour
                 objectOutline.enabled = false;
         }
     }
-
-    private void Grab()
-    {
-        if (_topPlayer?.inputHandler == null) return;
-
-        if (_topPlayer.inputHandler.GrabAction.WasPressedThisFrame())
-        {
-            if (objectGrabbable == null)
-            {
-                if (Physics.Raycast(playerCameraTransform.position, playerCameraTransform.forward, out RaycastHit raycastHit, pickUpDistance, pickUpLayerMask))
-                {
-                    if (raycastHit.transform.TryGetComponent(out objectGrabbable))
-                    {
-                        if (currentOutline != null)
-                        {
-                            currentOutline.enabled = false;
-                            currentOutline = null;
-                        }
-
-                        objectGrabbable.Grab(objectGrabPointTransform);
-                        pickedUp = true;
-                    }
-                }
-            }
-            else
-            {
-                if (currentInteractable != null) return;
-                objectGrabbable.Drop();
-                objectGrabbable = null;
-            }
-        }
-    }
-
-
-
-
 
     private void JumpAndGravity()
     {

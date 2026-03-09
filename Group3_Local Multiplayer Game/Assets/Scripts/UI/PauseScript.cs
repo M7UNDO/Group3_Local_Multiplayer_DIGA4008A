@@ -14,7 +14,7 @@ public class PauseScript : MonoBehaviour
     public GameObject pausePanel;
 
     [SerializeField]
-    private ManageUI manageUI;
+    private MainUI manageUI;
 
     [Header("Pause Settings")]
     [Space(5)]
@@ -45,12 +45,10 @@ public class PauseScript : MonoBehaviour
     {
         if (manageUI.settingsPanel.activeSelf)
         {
-            manageUI.SettingsPanel();
             return;
         }
         else if (manageUI.controlUIPanel.activeSelf)
         {
-            manageUI.ControlPanel();
             return;
         }
 

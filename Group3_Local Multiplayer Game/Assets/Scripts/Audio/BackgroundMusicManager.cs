@@ -7,6 +7,7 @@ public class BackgroundMusicManager : MonoBehaviour
     public AudioSource audioSource;
     public AudioClip[] backgroundTracks;
     public AudioClip[] suspensfulTracks;
+    public AudioClip missionFailedSFX;
     public bool playRandomly = false;
     public bool loopAll = true;
 
@@ -139,6 +140,12 @@ public class BackgroundMusicManager : MonoBehaviour
             StopCoroutine(fadeCoroutine);
 
         fadeCoroutine = StartCoroutine(FadeToNewTrack(backgroundTracks[nextTrack]));
+    }
+    public void PlayCaughtBackgroundMusic()
+    {
+        if (fadeCoroutine != null)
+            StopCoroutine(fadeCoroutine);
+        fadeCoroutine = StartCoroutine(FadeToNewTrack(missionFailedSFX));
     }
 
     IEnumerator FadeToNewTrack(AudioClip newClip)
