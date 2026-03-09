@@ -36,12 +36,17 @@ public class PlayerManager : MonoBehaviour
     private Vector3 originalPromptScale;
 
     public bool fromMain;
+    public GameObject player2Prefab;
 
     private void Awake()
     {
         playerControls = new PlayerControls();
         if (JoinedPlayerCount > 0)
         {
+            if(JoinedPlayerCount == 1)
+            {
+                playerInputManager.playerPrefab = player2Prefab;
+            }
             StartCoroutine(RespawnPlayers());
             return;
         }
@@ -111,9 +116,12 @@ public class PlayerManager : MonoBehaviour
             p1Text.text = "PLAYER 1: JOINED!";
             p1Text.color = joinedColorP1;
             statusPrompt.text = "WAITING FOR PLAYER 2...";
+            playerInputManager.playerPrefab = player2Prefab;
+
         }
         else if (players.Count == 2)
         {
+            
             p2Text.text = "PLAYER 2: JOINED!";
             p2Text.color = joinedColorP2;
             statusPrompt.text = "BOTH READY! PRESS START";
