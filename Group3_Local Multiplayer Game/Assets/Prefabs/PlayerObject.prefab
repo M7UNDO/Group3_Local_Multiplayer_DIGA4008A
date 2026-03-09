@@ -14757,10 +14757,29 @@ MonoBehaviour:
   crouch: 0
   stack: 0
   grab: 0
+  interact: 0
   balance: {x: 0, y: 0}
   analogMovement: 0
   cursorLocked: 1
   cursorInputForLook: 1
+  grabAction:
+    m_Name: Grab
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 898a83b1-5913-402c-8e8a-8e2c31d4ab7f
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  interactAction:
+    m_Name: Interact
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: b9cdd118-bbaf-49cb-8378-f8cdc40817b1
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
 --- !u!114 &3893359662872131571
 MonoBehaviour:
   m_ObjectHideFlags: 0
